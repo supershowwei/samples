@@ -14,7 +14,7 @@ namespace SamplesForm
     public class SqlBulkCopySample
     {
         private readonly string twstocksOfWantgooDbStockConnectionString =
-    ConfigurationManager.ConnectionStrings["wantgoodbstock.twstocks"].ConnectionString;
+            ConfigurationManager.ConnectionStrings["wantgoodbstock.twstocks"].ConnectionString;
 
         public void BulkInsert(List<SecuritiesTransaction> transactions)
         {
@@ -62,6 +62,5 @@ namespace SamplesForm
 
             return dt;
         }
-
     }
 }
