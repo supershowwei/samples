@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\ControlExtension.cs" />
+    <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\StringExtension.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
