@@ -1,0 +1,78 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>New</title>
+
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!--Import materialize.css-->
+    <link href="~/Content/materialize.css" rel="stylesheet" media="screen,projection"/>
+    <style>
+        [contenteditable]:focus {
+            border-bottom: 2px solid #26a69a;
+            box-shadow: 0 1px 0 0 #26a69a;
+            outline: none;
+        }
+    </style>
+
+    <!--Import jQuery before materialize.js-->
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="~/Scripts/materialize.min.js"></script>
+    <script src="~/Scripts/angular.min.js"></script>
+    <script src="~/Scripts/ContenteditableTable/contenteditableDirective.js"></script>
+    <script src="~/Scripts/ContenteditableTable/Receipt.js"></script>
+    <script src="~/Scripts/ContenteditableTable/newApp.js"></script>
+    <script src="~/Scripts/ContenteditableTable/newController.js"></script>
+</head>
+<body>
+<div class="container" ng-app="newApp" ng-controller="newController as newCtrl">
+    <div class="row">
+        <blockquote>
+            <table class="responsive-table">
+                <thead>
+                <tr>
+                    <th data-field="summary">摘要</th>
+                    <th data-field="receiptDate">發票日期</th>
+                    <th data-field="receiptNumber">發票號碼</th>
+                    <th data-field="noTaxAmount">未稅金額</th>
+                    <th data-field="tax">稅金</th>
+                    <th data-field="amount">金額</th>
+                    <th data-field="memo">備註</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr ng-repeat="receipt in newCtrl.receipts">
+                    <td contenteditable strip-br="true" ng-model="receipt.summary"></td>
+                    <td contenteditable strip-br="true" ng-model="receipt.date"></td>
+                    <td contenteditable strip-br="true" ng-model="receipt.number"></td>
+                    <td contenteditable strip-br="true" ng-model="receipt.noTaxAmount"></td>
+                    <td ng-bind="receipt.tax()"></td>
+                    <td ng-bind="receipt.amount()"></td>
+                    <td contenteditable strip-br="true" ng-model="receipt.memo"></td>
+                    <td>
+                        <a href="#" class="secondary-content red-text" ng-click="newCtrl.receipts.splice($index, 1)">
+                            <i class="material-icons">delete_forever</i>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <p>
+                <a class="waves-effect waves-light orange lighten-1 btn" ng-click="newCtrl.addReceipt()">
+                    <i class="material-icons">add</i>
+                </a>
+            </p>
+        </blockquote>
+    </div>
+</div>
+</body>
+</html>
