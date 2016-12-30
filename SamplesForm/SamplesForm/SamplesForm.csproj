@@ -61,6 +61,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Compile Include="Extensions\ControlExtension.cs" />
+    <Compile Include="Extensions\DataExtension.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\StringExtension.cs" />
     <Compile Include="MainForm.cs">
