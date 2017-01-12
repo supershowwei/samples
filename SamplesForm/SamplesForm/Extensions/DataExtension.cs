@@ -35,24 +35,40 @@ namespace SamplesForm.Extensions
 
         private static Dictionary<DataColumn, PropertyInfo> GeneratePropertiesOfCorrespondingColumn<T>()
         {
+            var orderedProperties = typeof(T).GetProperties().Where(p => p.GetMethod.IsPublic).Select(
+                p =>
+                    {
+                        var columnAttr =
+                            p.CustomAttributes.SingleOrDefault(x => x.AttributeType == typeof(ColumnAttribute));
+
+                        var namedArguments = columnAttr != null
+                                                 ? columnAttr.NamedArguments.ToDictionary(
+                                                     x => x.MemberName,
+                                                     x => x.TypedValue.Value)
+                                                 : null;
+
+                        return
+                            new
+                                {
+                                    Order =
+                                    (namedArguments != null) && namedArguments.ContainsKey("Order")
+                                        ? (int)namedArguments["Order"]
+                                        : int.MaxValue,
+                                    Name =
+                                    (namedArguments != null) && namedArguments.ContainsKey("Name")
+                                        ? (string)namedArguments["Name"]
+                                        : p.Name,
+                                    Value = p
+                                };
+                    }).OrderBy(x => x.Order);
+
             return
-                typeof(T).GetProperties()
-                    .ToDictionary(
-                        property =>
-                            new DataColumn(
-                                GetPropertyName(property),
-                                Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType));
-        }
-
-        private static string GetPropertyName(PropertyInfo property)
-        {
-            var columnAttr = property.CustomAttributes.SingleOrDefault(x => x.AttributeType == typeof(ColumnAttribute));
-
-            var propertyName = columnAttr != null
-                                   ? columnAttr.NamedArguments.Single(x => x.MemberName.Equals("Name")).TypedValue.Value
-                                   : property.Name;
-
-            return (string)propertyName;
+                orderedProperties.ToDictionary(
+                    property =>
+                        new DataColumn(
+                            property.Name,
+                            Nullable.GetUnderlyingType(property.Value.PropertyType) ?? property.Value.PropertyType),
+                    property => property.Value);
         }
     }
 }
