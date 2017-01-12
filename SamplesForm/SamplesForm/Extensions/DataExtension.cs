@@ -35,32 +35,23 @@ namespace SamplesForm.Extensions
 
         private static Dictionary<DataColumn, PropertyInfo> GeneratePropertiesOfCorrespondingColumn<T>()
         {
-            var orderedProperties = typeof(T).GetProperties().Where(p => p.GetMethod.IsPublic).Select(
-                p =>
-                    {
-                        var columnAttr =
-                            p.CustomAttributes.SingleOrDefault(x => x.AttributeType == typeof(ColumnAttribute));
+            var orderedProperties = typeof(T).GetProperties()
+                .Where(p => p.CustomAttributes.Any(x => x.AttributeType == typeof(ColumnAttribute)))
+                .Select(
+                    p =>
+                        {
+                            var namedArgs =
+                                p.CustomAttributes.Single(x => x.AttributeType == typeof(ColumnAttribute))
+                                    .NamedArguments.ToDictionary(x => x.MemberName, x => x.TypedValue.Value);
 
-                        var namedArguments = columnAttr != null
-                                                 ? columnAttr.NamedArguments.ToDictionary(
-                                                     x => x.MemberName,
-                                                     x => x.TypedValue.Value)
-                                                 : null;
-
-                        return
-                            new
-                                {
-                                    Order =
-                                    (namedArguments != null) && namedArguments.ContainsKey("Order")
-                                        ? (int)namedArguments["Order"]
-                                        : int.MaxValue,
-                                    Name =
-                                    (namedArguments != null) && namedArguments.ContainsKey("Name")
-                                        ? (string)namedArguments["Name"]
-                                        : p.Name,
-                                    Value = p
-                                };
-                    }).OrderBy(x => x.Order);
+                            return
+                                new
+                                    {
+                                        Order = namedArgs.ContainsKey("Order") ? (int)namedArgs["Order"] : int.MaxValue,
+                                        Name = namedArgs.ContainsKey("Name") ? (string)namedArgs["Name"] : p.Name,
+                                        Value = p
+                                    };
+                        }).OrderBy(x => x.Order);
 
             return
                 orderedProperties.ToDictionary(
