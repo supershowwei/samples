@@ -9,20 +9,20 @@ namespace SamplesForm.Extensions
 {
     public static class DataExtension
     {
-        public static DataTable ToDataTable<T>(this List<T> me)
+        public static DataTable ToDataTable<T, TColumns>(this List<T> me, Func<T, TColumns> columns)
         {
             var table = new DataTable();
 
-            var properties = GeneratePropertiesOfCorrespondingColumn<T>();
+            var propertiesOfCorrespondingColumn = GeneratePropertiesOfCorrespondingColumn(columns);
 
-            table.Columns.AddRange(properties.Keys.ToArray());
+            table.Columns.AddRange(propertiesOfCorrespondingColumn.Keys.ToArray());
 
             me.ForEach(
                 item =>
                     {
                         var row = table.NewRow();
 
-                        foreach (var property in properties)
+                        foreach (var property in propertiesOfCorrespondingColumn)
                         {
                             row[property.Key] = property.Value.GetValue(item) ?? DBNull.Value;
                         }
@@ -33,33 +33,41 @@ namespace SamplesForm.Extensions
             return table;
         }
 
-        private static Dictionary<DataColumn, PropertyInfo> GeneratePropertiesOfCorrespondingColumn<T>()
+        private static Dictionary<DataColumn, PropertyInfo> GeneratePropertiesOfCorrespondingColumn<T, TColumns>(
+            Func<T, TColumns> columns)
         {
-            var orderedProperties = typeof(T).GetProperties()
-                .Where(p => p.CustomAttributes.Any(x => x.AttributeType == typeof(ColumnAttribute)))
-                .Select(
-                    p =>
-                        {
-                            var namedArgs =
-                                p.CustomAttributes.Single(x => x.AttributeType == typeof(ColumnAttribute))
-                                    .NamedArguments.ToDictionary(x => x.MemberName, x => x.TypedValue.Value);
+            var propertiesOfCorrespondingColumn = new Dictionary<DataColumn, PropertyInfo>();
 
-                            return
-                                new
-                                    {
-                                        Order = namedArgs.ContainsKey("Order") ? (int)namedArgs["Order"] : int.MaxValue,
-                                        Name = namedArgs.ContainsKey("Name") ? (string)namedArgs["Name"] : p.Name,
-                                        Value = p
-                                    };
-                        }).OrderBy(x => x.Order);
+            var properties = typeof(T).GetProperties().ToDictionary(
+                p => p.Name,
+                p =>
+                    {
+                        var columnAttr =
+                            p.CustomAttributes.SingleOrDefault(a => a.AttributeType == typeof(ColumnAttribute));
 
-            return
-                orderedProperties.ToDictionary(
-                    property =>
+                        return
+                            new
+                                {
+                                    Value = p,
+                                    ColumnName =
+                                    columnAttr == null ? p.Name : (string)columnAttr.ConstructorArguments[0].Value
+                                };
+                    });
+
+            foreach (var column in columns.Method.ReturnType.GetProperties())
+            {
+                if (properties.ContainsKey(column.Name))
+                {
+                    propertiesOfCorrespondingColumn.Add(
                         new DataColumn(
-                            property.Name,
-                            Nullable.GetUnderlyingType(property.Value.PropertyType) ?? property.Value.PropertyType),
-                    property => property.Value);
+                            properties[column.Name].ColumnName,
+                            Nullable.GetUnderlyingType(properties[column.Name].Value.PropertyType)
+                            ?? properties[column.Name].Value.PropertyType),
+                        properties[column.Name].Value);
+                }
+            }
+
+            return propertiesOfCorrespondingColumn;
         }
     }
 }
