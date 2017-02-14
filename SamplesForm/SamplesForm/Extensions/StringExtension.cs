@@ -11,6 +11,11 @@ namespace SamplesForm.Extensions
             return me.Length > length ? me.Substring(0, length) : me;
         }
 
+        public static bool NotEquals(this string me, string value)
+        {
+            return !me.Equals(value);
+        }
+
         public static string Right(this string me, int length)
         {
             length = Math.Max(length, 0);
