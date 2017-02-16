@@ -18,11 +18,9 @@ namespace SamplesForm
 
         public void BulkInsert(List<SecuritiesTransaction> transactions)
         {
-            var table = CreateSchema();
-
-            var properties = SqlBulkCopyUtility.GetPropertiesOfCorrespondingColumn<SecuritiesTransaction>(table.Columns);
-
-            SqlBulkCopyUtility.InsertDataRows(transactions, properties, table);
+            var table =
+                transactions.ToDataTable(
+                    x => new { x.StockNo, x.Date, StockAgentIdx = 0, Price = 0d, BuyCount = 0, SellCount = 0 });
 
             using (var tx = new TransactionScope())
             {
@@ -68,19 +66,6 @@ namespace SamplesForm
 
             // 開始寫入
             //sqlBC.WriteToServer(dt);
-        }
-
-        private static DataTable CreateSchema()
-        {
-            var dt = new DataTable();
-            dt.Columns.Add("Date", typeof(string));
-            dt.Columns.Add("StockAgentIdx", typeof(string));
-            dt.Columns.Add("StockNo", typeof(string));
-            dt.Columns.Add("Price", typeof(double));
-            dt.Columns.Add("BuyCount", typeof(double));
-            dt.Columns.Add("SellCount", typeof(double));
-
-            return dt;
         }
     }
 }
