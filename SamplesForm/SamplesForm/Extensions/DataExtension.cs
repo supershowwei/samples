@@ -24,7 +24,7 @@ namespace SamplesForm.Extensions
 
                         foreach (var property in propertiesOfCorrespondingColumn)
                         {
-                            row[property.Key] = property.Value.GetValue(item) ?? DBNull.Value;
+                            row[property.Key] = property.Value == null ? DBNull.Value : property.Value.GetValue(item);
                         }
 
                         table.Rows.Add(row);
@@ -64,6 +64,14 @@ namespace SamplesForm.Extensions
                             Nullable.GetUnderlyingType(properties[column.Name].Value.PropertyType)
                             ?? properties[column.Name].Value.PropertyType),
                         properties[column.Name].Value);
+                }
+                else
+                {
+                    propertiesOfCorrespondingColumn.Add(
+                        new DataColumn(
+                            column.Name,
+                            Nullable.GetUnderlyingType(column.PropertyType) ?? column.PropertyType),
+                        null);
                 }
             }
 
