@@ -27,7 +27,12 @@ namespace SamplesForm
 
         private void LoadCacheObject()
         {
-            throw new System.NotImplementedException();
+            var configPath = "Config File Path";
+
+            var cacheItemPolicy = new CacheItemPolicy();
+            cacheItemPolicy.ChangeMonitors.Add(new HostFileChangeMonitor(new string[] { configPath }));
+
+            this.objectCache.Set(Key, "object or value", cacheItemPolicy);
         }
     }
 }
