@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>3A 測試方法</Title>
+      <Author />
+      <Description />
+      <HelpUrl />
+      <Shortcut>aaatestm</Shortcut>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal Editable="true">
+          <ID>TestCategory</ID>
+          <ToolTip>Test category</ToolTip>
+          <Default>TestCategory</Default>
+          <Function />
+        </Literal>
+        <Literal Editable="true">
+          <ID>Case</ID>
+          <ToolTip>Case under test</ToolTip>
+          <Default>Case</Default>
+          <Function />
+        </Literal>
+        <Literal Editable="true">
+          <ID>UnderCondition</ID>
+          <ToolTip>Under condition</ToolTip>
+          <Default>UnderCondition</Default>
+          <Function />
+        </Literal>
+        <Literal Editable="true">
+          <ID>ExpectedResult</ID>
+          <ToolTip>Expected result</ToolTip>
+          <Default>ExpectedResult</Default>
+          <Function />
+        </Literal>
+      </Declarations>
+      <Code Language="csharp" Kind="method decl"><![CDATA[[TestMethod]
+[TestCategory("$TestCategory$")]
+public void Test_$Case$_$UnderCondition$_$ExpectedResult$()
+{
+    // Arrange
+    $end$
+
+    // Act
+    
+
+    // Assert
+    
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
