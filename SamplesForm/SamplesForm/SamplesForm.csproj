@@ -65,6 +65,7 @@
     <Compile Include="Extensions\ControlExtension.cs" />
     <Compile Include="Extensions\DataExtension.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
+    <Compile Include="Extensions\EnumerableExtension.cs" />
     <Compile Include="Extensions\MemoryAddressExtenstion.cs" />
     <Compile Include="Extensions\StringExtension.cs" />
     <Compile Include="MainForm.cs">
