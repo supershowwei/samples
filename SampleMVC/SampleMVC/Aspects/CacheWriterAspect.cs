@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Castle.DynamicProxy;
 using Newtonsoft.Json;
 using SampleMVC.Attributes;
@@ -23,9 +24,21 @@ namespace SampleMVC.Aspects
                     invocation.Arguments,
                     cacheAttribute.Template);
 
-                var db = Redis.Instance.Connection.GetDatabase(cacheAttribute.Db);
+                SetCache(key, invocation.ReturnValue, cacheAttribute.Db, cacheAttribute.Timeout);
+            }
+        }
 
-                db.StringSet(key, JsonConvert.SerializeObject(invocation.ReturnValue), cacheAttribute.Timeout);
+        private static void SetCache(string key, object value, int db, TimeSpan? timeout)
+        {
+            try
+            {
+                var database = Redis.Instance.Connection.GetDatabase(db);
+
+                database.StringSet(key, JsonConvert.SerializeObject(value), timeout);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Write Log
             }
         }
     }

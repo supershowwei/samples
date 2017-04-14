@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Castle.DynamicProxy;
 using Newtonsoft.Json;
 using SampleMVC.Attributes;
@@ -22,10 +23,9 @@ namespace SampleMVC.Aspects
                     invocation.Arguments,
                     cacheAttribute.Template);
 
-                var db = Redis.Instance.Connection.GetDatabase(cacheAttribute.Db);
+                var cacheValue = GetCache(key, cacheAttribute.Db);
 
-                RedisValue cacheValue;
-                if ((cacheValue = db.StringGet(key)).HasValue)
+                if (cacheValue.HasValue)
                 {
                     invocation.ReturnValue = JsonConvert.DeserializeObject(cacheValue, invocation.Method.ReturnType);
                 }
@@ -37,6 +37,22 @@ namespace SampleMVC.Aspects
             else
             {
                 invocation.Proceed();
+            }
+        }
+
+        private static RedisValue GetCache(string key, int db)
+        {
+            try
+            {
+                var database = Redis.Instance.Connection.GetDatabase(db);
+
+                return database.StringGet(key);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Write Log
+
+                return default(RedisValue);
             }
         }
     }
