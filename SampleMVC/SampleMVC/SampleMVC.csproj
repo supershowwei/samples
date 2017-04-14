@@ -126,7 +126,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Aspects\CacheReaderAspect.cs" />
     <Compile Include="Aspects\CacheWriterAspect.cs" />
-    <Compile Include="Attributes\CacheKeyAttribute.cs" />
+    <Compile Include="Attributes\CacheAttribute.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ContenteditableTableController.cs" />
     <Compile Include="Controllers\JsonNetResult.cs" />

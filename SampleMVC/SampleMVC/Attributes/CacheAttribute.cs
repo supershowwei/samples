@@ -3,9 +3,9 @@
 namespace SampleMVC.Attributes
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public class CacheKeyAttribute : Attribute
+    public class CacheAttribute : Attribute
     {
-        public CacheKeyAttribute(string template, int db = 0, TimeSpan? timeout = null)
+        public CacheAttribute(string template, int db = 0, TimeSpan? timeout = null)
         {
             this.Template = template;
             this.Db = db;

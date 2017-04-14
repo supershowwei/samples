@@ -12,17 +12,17 @@ namespace SampleMVC.Aspects
     {
         public void Intercept(IInvocation invocation)
         {
-            var cacheKeyAttribute = invocation.MethodInvocationTarget.GetCustomAttribute<CacheKeyAttribute>();
+            var cacheAttribute = invocation.MethodInvocationTarget.GetCustomAttribute<CacheAttribute>();
 
-            if (invocation.Method.ReturnType != typeof(void) && cacheKeyAttribute != null)
+            if (invocation.Method.ReturnType != typeof(void) && cacheAttribute != null)
             {
                 var key = CacheKeyHelper.GenerateKey(
                     invocation.MethodInvocationTarget,
                     invocation.Method.GetParameters(),
                     invocation.Arguments,
-                    cacheKeyAttribute.Template);
+                    cacheAttribute.Template);
 
-                var db = Redis.Instance.Connection.GetDatabase(cacheKeyAttribute.Db);
+                var db = Redis.Instance.Connection.GetDatabase(cacheAttribute.Db);
 
                 RedisValue cacheValue;
                 if ((cacheValue = db.StringGet(key)).HasValue)

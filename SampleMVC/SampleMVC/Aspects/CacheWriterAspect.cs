@@ -13,19 +13,19 @@ namespace SampleMVC.Aspects
         {
             invocation.Proceed();
 
-            var cacheKeyAttribute = invocation.MethodInvocationTarget.GetCustomAttribute<CacheKeyAttribute>();
+            var cacheAttribute = invocation.MethodInvocationTarget.GetCustomAttribute<CacheAttribute>();
 
-            if (invocation.Method.ReturnType != typeof(void) && cacheKeyAttribute != null)
+            if (invocation.Method.ReturnType != typeof(void) && cacheAttribute != null)
             {
                 var key = CacheKeyHelper.GenerateKey(
                     invocation.MethodInvocationTarget,
                     invocation.Method.GetParameters(),
                     invocation.Arguments,
-                    cacheKeyAttribute.Template);
+                    cacheAttribute.Template);
 
-                var db = Redis.Instance.Connection.GetDatabase(cacheKeyAttribute.Db);
+                var db = Redis.Instance.Connection.GetDatabase(cacheAttribute.Db);
 
-                db.StringSet(key, JsonConvert.SerializeObject(invocation.ReturnValue), cacheKeyAttribute.Timeout);
+                db.StringSet(key, JsonConvert.SerializeObject(invocation.ReturnValue), cacheAttribute.Timeout);
             }
         }
     }
