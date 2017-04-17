@@ -34,7 +34,14 @@ namespace SampleMVC.Aspects
             {
                 var database = Redis.Instance.Connection.GetDatabase(db);
 
-                database.StringSet(key, JsonConvert.SerializeObject(value), timeout);
+                if (value != null)
+                {
+                    database.StringSet(key, JsonConvert.SerializeObject(value), timeout);
+                }
+                else
+                {
+                    database.KeyDelete(key);
+                }
             }
             catch (Exception ex)
             {
