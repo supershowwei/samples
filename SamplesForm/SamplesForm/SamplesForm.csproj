@@ -63,6 +63,7 @@
     </Content>
     <Compile Include="DynamicParametersSample.cs" />
     <Compile Include="Extensions\ControlExtension.cs" />
+    <Compile Include="Extensions\DapperExtension.cs" />
     <Compile Include="Extensions\DataExtension.cs" />
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumerableExtension.cs" />
