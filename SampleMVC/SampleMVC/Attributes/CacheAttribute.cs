@@ -12,9 +12,9 @@ namespace SampleMVC.Attributes
             this.Timeout = timeout;
         }
 
-        public int Db { get; set; }
-
         public string Template { get; set; }
+
+        public int Db { get; set; }
 
         public TimeSpan? Timeout { get; set; }
     }

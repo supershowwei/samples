@@ -51,7 +51,6 @@ namespace SampleMVC.Aspects
             catch (Exception ex)
             {
                 // TODO: Write Log
-
                 return default(RedisValue);
             }
         }
