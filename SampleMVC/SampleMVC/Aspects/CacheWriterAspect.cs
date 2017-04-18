@@ -20,7 +20,6 @@ namespace SampleMVC.Aspects
             {
                 var key = CacheKeyHelper.GenerateKey(
                     invocation.MethodInvocationTarget,
-                    invocation.Method.GetParameters(),
                     invocation.Arguments,
                     cacheAttribute.Template);
 
