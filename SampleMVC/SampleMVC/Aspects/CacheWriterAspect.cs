@@ -9,6 +9,8 @@ namespace SampleMVC.Aspects
 {
     public class CacheWriterAspect : IInterceptor
     {
+        public int Order => 1;
+
         public void Intercept(IInvocation invocation)
         {
             invocation.Proceed();

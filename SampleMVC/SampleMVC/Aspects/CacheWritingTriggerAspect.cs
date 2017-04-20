@@ -16,6 +16,8 @@ namespace SampleMVC.Aspects
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(CacheWritingTriggerAspect));
 
+        public int Order => -1;
+
         public void Intercept(IInvocation invocation)
         {
             invocation.Proceed();

@@ -10,6 +10,8 @@ namespace SampleMVC.Aspects
 {
     public class CacheReaderAspect : IInterceptor
     {
+        public int Order => 0;
+
         public void Intercept(IInvocation invocation)
         {
             var cacheAttribute = invocation.MethodInvocationTarget.GetCustomAttribute<CacheAttribute>();
