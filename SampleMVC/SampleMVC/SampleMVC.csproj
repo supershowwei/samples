@@ -140,7 +140,7 @@
     <Compile Include="Interceptors\ExceptionInterceptor.cs" />
     <Compile Include="Models\ServiceResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Singletons\Redis.cs" />
+    <Compile Include="Helpers\RedisHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\web.config" />

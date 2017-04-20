@@ -4,7 +4,6 @@ using Castle.DynamicProxy;
 using Newtonsoft.Json;
 using SampleMVC.Attributes;
 using SampleMVC.Helpers;
-using SampleMVC.Singletons;
 
 namespace SampleMVC.Aspects
 {
@@ -31,7 +30,7 @@ namespace SampleMVC.Aspects
         {
             try
             {
-                var database = Redis.Instance.Connection.GetDatabase(db);
+                var database = RedisHelper.Instance.Connection.GetDatabase(db);
 
                 if (value != null)
                 {
