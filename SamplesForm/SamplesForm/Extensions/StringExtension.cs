@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace SamplesForm.Extensions
 {
@@ -21,6 +22,13 @@ namespace SamplesForm.Extensions
             length = Math.Max(length, 0);
 
             return me.Length > length ? me.Substring(me.Length - length, length) : me;
+        }
+
+        public static string ToHtml(this string me)
+        {
+            return string.Join(
+                string.Empty,
+                me.ToCharArray().Select(c => c > 127 ? string.Concat("&#", (int)c, ";") : c.ToString()));
         }
     }
 }
