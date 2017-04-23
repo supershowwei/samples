@@ -138,6 +138,7 @@
     <Compile Include="Attributes\CachingTriggerAttribute.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ContenteditableTableController.cs" />
+    <Compile Include="Controllers\ControllerExtension.cs" />
     <Compile Include="Controllers\JsonNetResult.cs" />
     <Compile Include="Controllers\RequestUrlController.cs" />
     <Compile Include="Global.asax.cs">
