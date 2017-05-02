@@ -27,7 +27,14 @@ namespace SampleMVC
             builder.RegisterAssemblyTypes(Assembly.Load("SampleMVC.Physical"))
                 .Where(x => !x.Name.EndsWith("Config", StringComparison.OrdinalIgnoreCase))
                 .AsImplementedInterfaces()
-                .EnableInterfaceInterceptors(new ProxyGenerationOptions { Selector = new InterceptorsForPhysical() });
+                .EnableInterfaceInterceptors(
+                    new ProxyGenerationOptions
+                        {
+                            Selector =
+                                new ExcludingInterceptors(
+                                    typeof(CacheWriterAspect),
+                                    typeof(CacheWritingTriggerAspect))
+                        });
 
             builder.RegisterAssemblyTypes(Assembly.Load("SampleMVC.Logic"))
                 .AsImplementedInterfaces()
@@ -39,14 +46,18 @@ namespace SampleMVC
         }
     }
 
-    internal class InterceptorsForPhysical : IInterceptorSelector
+    internal class ExcludingInterceptors : IInterceptorSelector
     {
+        private readonly Type[] excludeds;
+
+        public ExcludingInterceptors(params Type[] excludeds)
+        {
+            this.excludeds = excludeds;
+        }
+
         public IInterceptor[] SelectInterceptors(Type type, MethodInfo method, IInterceptor[] interceptors)
         {
-            // 排除特定 Interceptor、按照 Order 排序。
-            var excludedInterceptors = new[] { typeof(CacheWriterAspect), typeof(CacheWritingTriggerAspect) };
-
-            return interceptors.Where(x => excludedInterceptors.All(t => x.GetType() != t)).OrderBy(
+            return interceptors.Where(x => this.excludeds.All(t => x.GetType() != t)).OrderBy(
                 x =>
                     {
                         var order = x.GetType().GetProperty("Order");
