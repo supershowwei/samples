@@ -13,18 +13,41 @@ namespace SampleMVC.Aspects
 
         public void Intercept(IInvocation invocation)
         {
-            invocation.Proceed();
-
             var cacheAttribute = invocation.MethodInvocationTarget.GetCustomAttribute<CacheAttribute>();
 
-            if (invocation.Method.ReturnType != typeof(void) && cacheAttribute != null)
+            if (TryProceed(invocation, out object returnValue) && invocation.Method.ReturnType != typeof(void)
+                && cacheAttribute != null)
             {
                 var key = CacheKeyHelper.GenerateKey(
                     invocation.MethodInvocationTarget,
                     invocation.Arguments,
                     cacheAttribute.Template);
 
-                SetCache(key, invocation.ReturnValue, cacheAttribute.Db, cacheAttribute.Timeout);
+                SetCache(key, returnValue, cacheAttribute.Db, cacheAttribute.Timeout);
+            }
+        }
+
+        private static bool TryProceed(IInvocation invocation, out object returnValue)
+        {
+            returnValue = null;
+
+            try
+            {
+                invocation.Proceed();
+
+                returnValue = invocation.ReturnValue;
+
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                // 序列未包含符合的項目，代表已被刪除。
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // TODO: Write Log
+                return false;
             }
         }
 
