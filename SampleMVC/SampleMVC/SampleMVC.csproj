@@ -139,6 +139,7 @@
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ContenteditableTableController.cs" />
     <Compile Include="Controllers\ControllerExtension.cs" />
+    <Compile Include="Controllers\HttpVerbController.cs" />
     <Compile Include="Controllers\JsonNetResult.cs" />
     <Compile Include="Controllers\RequestUrlController.cs" />
     <Compile Include="Global.asax.cs">
@@ -158,6 +159,7 @@
     <Content Include="packages.config" />
     <Content Include="Views\ContenteditableTable\New.cshtml" />
     <Content Include="Views\RequestUrl\List.cshtml" />
+    <Content Include="Views\HttpVerb\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -167,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Default\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

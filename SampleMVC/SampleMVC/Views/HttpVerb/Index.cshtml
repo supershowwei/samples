@@ -1,0 +1,37 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body ng-app="indexApp">
+    <div ng-controller="indexController as indexCtrl">
+        <input id="Button1" type="button" value="button" ng-click="indexCtrl.patch()" />
+    </div>
+    <script src="~/Scripts/angular.min.js"></script>
+    <script>
+        angular.module("indexApp", [])
+            .controller("indexController",
+            [
+                "$http",
+                function ($http) {
+                    var self = this;
+
+                    self.patch = function () {
+                        $http.patch("/HttpVerb/Patch", { text: "hello world" }).then(function (response) {
+                            console.log(response);
+                        },
+                            function (response) {
+                                console.error(response);
+                            });
+                    };
+                }
+            ]);
+    </script>
+</body>
+</html>

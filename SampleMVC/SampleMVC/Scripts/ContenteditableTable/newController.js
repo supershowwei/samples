@@ -8,7 +8,13 @@
             self.receipts = [];
 
             self.addReceipt = function () {
-                self.receipts.push(new Receipt());
+                //self.receipts.push(new Receipt());
+                $http.patch("/ContenteditableTable/CCC", {data:""}).then(function (response) {
+                        console.log(response);
+                    },
+                    function (response) {
+                        console.error(response);
+                    });
             };
             
             // $http handle HTTP and Service result fully
