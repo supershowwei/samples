@@ -76,6 +76,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\Data\SecuritiesTransaction.cs" />
+    <Compile Include="Model\Parameters\Field.cs" />
     <Compile Include="MyMoneyZeroCracker.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
