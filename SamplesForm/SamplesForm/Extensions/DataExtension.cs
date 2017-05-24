@@ -36,8 +36,6 @@ namespace SamplesForm.Extensions
         private static Dictionary<DataColumn, PropertyInfo> GeneratePropertiesOfCorrespondingColumn<T, TColumns>(
             Func<T, TColumns> columns)
         {
-            var propertiesOfCorrespondingColumn = new Dictionary<DataColumn, PropertyInfo>();
-
             var properties = typeof(T).GetProperties().ToDictionary(
                 p => p.Name,
                 p =>
@@ -54,28 +52,15 @@ namespace SamplesForm.Extensions
                                 };
                     });
 
-            foreach (var column in columns.Method.ReturnType.GetProperties())
-            {
-                if (properties.ContainsKey(column.Name))
-                {
-                    propertiesOfCorrespondingColumn.Add(
-                        new DataColumn(
-                            properties[column.Name].ColumnName,
-                            Nullable.GetUnderlyingType(properties[column.Name].Value.PropertyType)
-                            ?? properties[column.Name].Value.PropertyType),
-                        properties[column.Name].Value);
-                }
-                else
-                {
-                    propertiesOfCorrespondingColumn.Add(
-                        new DataColumn(
-                            column.Name,
-                            Nullable.GetUnderlyingType(column.PropertyType) ?? column.PropertyType),
-                        null);
-                }
-            }
-
-            return propertiesOfCorrespondingColumn;
+            return
+                columns.Method.ReturnType.GetProperties()
+                    .ToDictionary(
+                        column =>
+                            new DataColumn(
+                                properties[column.Name].ColumnName,
+                                Nullable.GetUnderlyingType(properties[column.Name].Value.PropertyType)
+                                ?? properties[column.Name].Value.PropertyType),
+                        column => properties[column.Name].Value);
         }
     }
 }
