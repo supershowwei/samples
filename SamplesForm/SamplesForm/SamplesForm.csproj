@@ -68,6 +68,7 @@
     <Compile Include="Extensions\DateTimeExtension.cs" />
     <Compile Include="Extensions\EnumerableExtension.cs" />
     <Compile Include="Extensions\MemoryAddressExtenstion.cs" />
+    <Compile Include="Extensions\ObjectExtension.cs" />
     <Compile Include="Extensions\StringExtension.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
