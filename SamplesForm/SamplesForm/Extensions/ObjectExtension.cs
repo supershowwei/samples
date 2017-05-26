@@ -10,5 +10,10 @@ namespace SamplesForm.Extensions
 
             return me == null || me.Equals(other);
         }
+
+        public static T IIF<T>(this bool me, T trueValue, T falseValue)
+        {
+            return me ? trueValue : falseValue;
+        }
     }
 }
