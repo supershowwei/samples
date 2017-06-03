@@ -11,11 +11,13 @@ namespace SampleMVC.Attributes
         /// <param name="template">The template. default: ClassName.Method({key}), you can customize it, ex: MyKey({key}).</param>
         /// <param name="db">The database.</param>
         /// <param name="timeout">The timeout. (second unit)</param>
-        public CacheAttribute(string template, int db = 0, TimeSpan? timeout = null)
+        /// <param name="excludedMethods">The excluded methods.</param>
+        public CacheAttribute(string template, int db = 0, TimeSpan? timeout = null, params string[] excludedMethods)
         {
             this.Template = template;
             this.Db = db;
             this.Timeout = timeout;
+            this.ExcludedMethods = excludedMethods;
         }
 
         public string Template { get; set; }
@@ -23,5 +25,7 @@ namespace SampleMVC.Attributes
         public int Db { get; set; }
 
         public TimeSpan? Timeout { get; set; }
+
+        public string[] ExcludedMethods { get; set; }
     }
 }
