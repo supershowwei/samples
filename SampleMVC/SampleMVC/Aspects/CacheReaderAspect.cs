@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Castle.DynamicProxy;
 using Newtonsoft.Json;
 using SampleMVC.Attributes;
+using SampleMVC.Extensions;
 using SampleMVC.Helpers;
 using StackExchange.Redis;
 
@@ -16,7 +19,7 @@ namespace SampleMVC.Aspects
         {
             var cacheAttribute = invocation.MethodInvocationTarget.GetCustomAttribute<CacheAttribute>();
 
-            if (invocation.Method.ReturnType != typeof(void) && cacheAttribute != null)
+            if (IsReadFromCache(invocation, cacheAttribute))
             {
                 var key = CacheKeyHelper.GenerateKey(
                     invocation.MethodInvocationTarget,
@@ -53,6 +56,27 @@ namespace SampleMVC.Aspects
                 // TODO: Write Log
                 return default(RedisValue);
             }
+        }
+
+        private static bool IsReadFromCache(IInvocation invocation, CacheAttribute cacheAttribute)
+        {
+            if (cacheAttribute == null) return false;
+            if (invocation.Method.ReturnType == typeof(void)) return false;
+
+            if (cacheAttribute.ExcludedCallers != null && cacheAttribute.ExcludedCallers.Length > 0)
+            {
+                return
+                    !cacheAttribute.ExcludedCallers.Any(
+                        m => new StackTrace().GetFrames().Where(x => x.GetMethod().ReflectedType != null).Select(
+                            x =>
+                                {
+                                    var method = x.GetMethod();
+
+                                    return string.Concat(method.ReflectedType.FullName, ".", method.Name);
+                                }).Any(x => m.EqualsIgnoreCase(x)));
+            }
+
+            return true;
         }
     }
 }
