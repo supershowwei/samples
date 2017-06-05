@@ -31,28 +31,19 @@ namespace SamplesForm.Extensions
                 me.ToCharArray().Select(c => c > 127 ? string.Concat("&#", (int)c, ";") : c.ToString()));
         }
 
-        public static bool EqualsIgnoreCase(
-            this string me,
-            string value,
-            StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
+        public static bool EqualsIgnoreCase(this string me, string value)
         {
-            return me != null && me.Equals(value, comparisonType);
+            return me != null && me.Equals(value, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool EndsWithIgnoreCase(
-            this string me,
-            string value,
-            StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
+        public static bool EndsWithIgnoreCase(this string me, string value)
         {
-            return me != null && me.EndsWith(value, comparisonType);
+            return me != null && me.EndsWith(value, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool StartsWithIgnoreCase(
-            this string me,
-            string value,
-            StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
+        public static bool StartsWithIgnoreCase(this string me, string value)
         {
-            return me != null && me.StartsWith(value, comparisonType);
+            return me != null && me.StartsWith(value, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
