@@ -45,5 +45,10 @@ namespace SamplesForm.Extensions
         {
             return me != null && me.StartsWith(value, StringComparison.OrdinalIgnoreCase);
         }
+
+        public static bool ContainsIgnoreCase(this string me, string value)
+        {
+            return me != null && me.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
     }
 }
