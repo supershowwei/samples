@@ -135,6 +135,7 @@
     <Compile Include="Aspects\CacheWritingTriggerAspect.cs" />
     <Compile Include="Attributes\CacheAttribute.cs" />
     <Compile Include="Attributes\CachingTriggerAttribute.cs" />
+    <Compile Include="Attributes\DoNotUseCacheReaderAttribute.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ContenteditableTableController.cs" />
     <Compile Include="Controllers\ControllerExtension.cs" />

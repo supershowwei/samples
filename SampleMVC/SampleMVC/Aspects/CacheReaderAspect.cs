@@ -5,7 +5,6 @@ using System.Reflection;
 using Castle.DynamicProxy;
 using Newtonsoft.Json;
 using SampleMVC.Attributes;
-using SampleMVC.Extensions;
 using SampleMVC.Helpers;
 using StackExchange.Redis;
 
@@ -63,20 +62,15 @@ namespace SampleMVC.Aspects
             if (cacheAttribute == null) return false;
             if (invocation.Method.ReturnType == typeof(void)) return false;
 
-            if (cacheAttribute.ExcludedCallers != null && cacheAttribute.ExcludedCallers.Length > 0)
-            {
-                return
-                    !cacheAttribute.ExcludedCallers.Any(
-                        m => new StackTrace().GetFrames().Where(x => x.GetMethod().ReflectedType != null).Select(
-                            x =>
-                                {
-                                    var method = x.GetMethod();
-
-                                    return string.Concat(method.ReflectedType.FullName, ".", method.Name);
-                                }).Any(x => m.EqualsIgnoreCase(x)));
-            }
-
-            return true;
+            return
+                !new StackTrace().GetFrames()
+                    .Any(
+                        x =>
+                            {
+                                return
+                                    x.GetMethod()
+                                        .CustomAttributes.Any(a => a.AttributeType == typeof(DoNotUseCacheReaderAttribute));
+                            });
         }
     }
 }
