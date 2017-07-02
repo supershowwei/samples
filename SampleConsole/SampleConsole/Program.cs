@@ -54,14 +54,14 @@ namespace SampleConsole
                     {
                         while (!isClosing)
                         {
+                            Thread.Sleep(1000 - DateTime.Now.Millisecond);
                             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss.fff") + " Test");
-                            Thread.Sleep(5000);
                         }
 
                         Waiting.Set();
                     });
 
-            Console.WriteLine("Ctrl+C, Ctrl+Break or suppress the application to exit");
+            Console.WriteLine("Something executing...");
 
             Waiting.WaitOne();
         }
