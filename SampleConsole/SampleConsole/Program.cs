@@ -5,58 +5,38 @@ using System.Threading.Tasks;
 
 namespace SampleConsole
 {
+    public delegate bool HandlerRoutine(CtrlTypes ctrlType);
+
     internal class Program
     {
-        private static readonly AutoResetEvent Blocker = new AutoResetEvent(false);
+        private static readonly AutoResetEvent Waiting = new AutoResetEvent(false);
 
         private static bool isClosing;
 
-        // A delegate type to be used as the handler routine
-        // for SetConsoleCtrlHandler.
-        public delegate bool HandlerRoutine(CtrlTypes ctrlType);
-
-        // An enumerated type for the control messages
-        // sent to the handler routine.
-        public enum CtrlTypes
-        {
-            CtrlCEvent = 0,
-
-            CtrlBreakEvent,
-
-            CtrlCloseEvent,
-
-            CtrlLogoffEvent = 5,
-
-            CtrlShutdownEvent
-        }
-
-        // Declare the SetConsoleCtrlHandler function
-        // as external and receiving a delegate.
         [DllImport("Kernel32")]
-        public static extern bool SetConsoleCtrlHandler(HandlerRoutine handler, bool add);
+        private static extern bool SetConsoleCtrlHandler(HandlerRoutine handler, bool add);
 
         private static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
         {
-            // Put your own handler here
             switch (ctrlType)
             {
-                case CtrlTypes.CtrlCEvent:
+                case CtrlTypes.CTRL_C_EVENT:
                     isClosing = true;
                     Console.WriteLine("CTRL+C received!");
                     break;
 
-                case CtrlTypes.CtrlBreakEvent:
+                case CtrlTypes.CTRL_BREAK_EVENT:
                     isClosing = true;
                     Console.WriteLine("CTRL+BREAK received!");
                     break;
 
-                case CtrlTypes.CtrlCloseEvent:
+                case CtrlTypes.CTRL_CLOSE_EVENT:
                     isClosing = true;
                     Console.WriteLine("Program being closed!");
                     break;
 
-                case CtrlTypes.CtrlLogoffEvent:
-                case CtrlTypes.CtrlShutdownEvent:
+                case CtrlTypes.CTRL_LOGOFF_EVENT:
+                case CtrlTypes.CTRL_SHUTDOWN_EVENT:
                     isClosing = true;
                     Console.WriteLine("User is logging off!");
                     break;
@@ -78,12 +58,12 @@ namespace SampleConsole
                             Thread.Sleep(5000);
                         }
 
-                        Blocker.Set();
+                        Waiting.Set();
                     });
 
             Console.WriteLine("Ctrl+C, Ctrl+Break or suppress the application to exit");
 
-            Blocker.WaitOne();
+            Waiting.WaitOne();
         }
     }
 }
