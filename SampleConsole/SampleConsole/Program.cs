@@ -16,7 +16,7 @@ namespace SampleConsole
         [DllImport("Kernel32")]
         private static extern bool SetConsoleCtrlHandler(HandlerRoutine handler, bool add);
 
-        private static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
+        private static bool ConsoleCtrlHandler(CtrlTypes ctrlType)
         {
             switch (ctrlType)
             {
@@ -47,7 +47,7 @@ namespace SampleConsole
 
         private static void Main(string[] args)
         {
-            SetConsoleCtrlHandler(ConsoleCtrlCheck, true);
+            SetConsoleCtrlHandler(ConsoleCtrlHandler, true);
 
             Task.Run(
                 () =>
