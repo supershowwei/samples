@@ -20,36 +20,36 @@
           <Function />
         </Literal>
         <Literal Editable="true">
-          <ID>Case</ID>
-          <ToolTip>Case under test</ToolTip>
-          <Default>Case</Default>
+          <ID>UnitOfWorkName</ID>
+          <ToolTip>被測試的方法或一個類別</ToolTip>
+          <Default>UnitOfWorkName</Default>
           <Function />
         </Literal>
         <Literal Editable="true">
-          <ID>UnderCondition</ID>
-          <ToolTip>Under condition</ToolTip>
-          <Default>UnderCondition</Default>
+          <ID>Scenario</ID>
+          <ToolTip>用測試場景描述給公開方法的參數，或者單元測試進行時系統的初始狀態。</ToolTip>
+          <Default>Scenario</Default>
           <Function />
         </Literal>
         <Literal Editable="true">
-          <ID>ExpectedResult</ID>
-          <ToolTip>Expected result</ToolTip>
-          <Default>ExpectedResult</Default>
+          <ID>ExpectedBehavior</ID>
+          <ToolTip>在測試場景指定的條件下，被測試方法的預期行為。</ToolTip>
+          <Default>ExpectedBehavior</Default>
           <Function />
         </Literal>
       </Declarations>
       <Code Language="csharp" Kind="method decl"><![CDATA[[TestMethod]
 [TestCategory("$TestCategory$")]
-public void Test_$Case$_$UnderCondition$_$ExpectedResult$()
+public void Test_$UnitOfWorkName$_$Scenario$_$ExpectedBehavior$()
 {
     // Arrange
-    $end$
+	$end$
 
     // Act
-    
+	
 
     // Assert
-    
+	
 }]]>
       </Code>
     </Snippet>
