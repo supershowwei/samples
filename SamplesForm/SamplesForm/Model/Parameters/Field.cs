@@ -9,7 +9,12 @@ namespace SamplesForm.Model.Parameters
             this.Value = value;
         }
 
-        public T Value { get; private set; }
+        public Field(long value)
+        {
+            this.Value = (T)Convert.ChangeType(value, typeof(T));
+        }
+
+        public T Value { get; }
 
         public static implicit operator Field<T>(long value)
         {
