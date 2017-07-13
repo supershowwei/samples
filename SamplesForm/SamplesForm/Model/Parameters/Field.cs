@@ -11,7 +11,9 @@ namespace SamplesForm.Model.Parameters
 
         public Field(long value)
         {
-            this.Value = (T)Convert.ChangeType(value, typeof(T));
+            var t = typeof(T);
+
+            this.Value = (T)Convert.ChangeType(value, Nullable.GetUnderlyingType(t) ?? t);
         }
 
         public T Value { get; }
