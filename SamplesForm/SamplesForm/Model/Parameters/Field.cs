@@ -4,6 +4,11 @@ namespace SamplesForm.Model.Parameters
 {
     public class Field<T>
     {
+        public Field()
+        {
+            this.Value = default(T);
+        }
+
         public Field(T value)
         {
             this.Value = value;

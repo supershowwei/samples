@@ -13,9 +13,15 @@ namespace SamplesForm.JsonConverters
             throw new NotImplementedException();
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(
+            JsonReader reader,
+            Type objectType,
+            object existingValue,
+            JsonSerializer serializer)
         {
-            return Activator.CreateInstance(objectType, reader.Value);
+            return reader.Value == null
+                       ? Activator.CreateInstance(objectType)
+                       : Activator.CreateInstance(objectType, reader.Value);
         }
 
         public override bool CanConvert(Type objectType)
