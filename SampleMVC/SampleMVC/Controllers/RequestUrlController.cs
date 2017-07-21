@@ -10,14 +10,21 @@ namespace SampleMVC.Controllers
         // GET: RequestUrl
         public ActionResult List()
         {
-            var authority = this.Request.Url.GetLeftPart(UriPartial.Authority);
+            var uriPartialAuthority = this.Request.Url.GetLeftPart(UriPartial.Authority);
+            var uriPartialPath = this.Request.Url.GetLeftPart(UriPartial.Path);
+            var uriPartialQuery = this.Request.Url.GetLeftPart(UriPartial.Query);
+            var uriPartialScheme = this.Request.Url.GetLeftPart(UriPartial.Scheme);
+
             var appRelativeCurrentExecutionFilePath = this.Request.AppRelativeCurrentExecutionFilePath;
 
             this.ViewBag.Urls =
                 new Dictionary<string, string>
                     {
                         ["Request.RawUrl"] = this.Request.RawUrl,
-                        ["Request.Url.GetLeftPart(UriPartial.Authority)"] = authority,
+                        ["Request.Url.GetLeftPart(UriPartial.Authority)"] = uriPartialAuthority,
+                        ["Request.Url.GetLeftPart(UriPartial.Path)"] = uriPartialPath,
+                        ["Request.Url.GetLeftPart(UriPartial.Query)"] = uriPartialQuery,
+                        ["Request.Url.GetLeftPart(UriPartial.Scheme)"] = uriPartialScheme,
                         ["Request.Path"] = this.Request.Path,
                         ["Request.PhysicalPath"] = this.Request.PhysicalPath,
                         ["Request.AppRelativeCurrentExecutionFilePath"] = appRelativeCurrentExecutionFilePath,
