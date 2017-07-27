@@ -44,11 +44,6 @@ namespace SampleMVC.Aspects
                 // 序列未包含符合的項目，代表已被刪除。
                 return true;
             }
-            catch (Exception ex)
-            {
-                // TODO: Write Log
-                return false;
-            }
         }
 
         private static void SetCache(string key, object value, int db, TimeSpan? timeout)
