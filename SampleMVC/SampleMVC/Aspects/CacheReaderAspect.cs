@@ -66,11 +66,8 @@ namespace SampleMVC.Aspects
                 !new StackTrace().GetFrames()
                     .Any(
                         x =>
-                            {
-                                return
-                                    x.GetMethod()
-                                        .CustomAttributes.Any(a => a.AttributeType == typeof(DoNotUseCacheReaderAttribute));
-                            });
+                            x.GetMethod()
+                                .CustomAttributes.Any(a => a.AttributeType == typeof(DoNotUseCacheReaderAttribute)));
         }
     }
 }
