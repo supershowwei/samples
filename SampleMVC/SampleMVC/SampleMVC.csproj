@@ -141,6 +141,7 @@
     <Compile Include="Controllers\HttpVerbController.cs" />
     <Compile Include="Controllers\JsonNetResult.cs" />
     <Compile Include="Controllers\RequestUrlController.cs" />
+    <Compile Include="Extensions\InvocationExtension.cs" />
     <Compile Include="Extensions\ServiceResultExtension.cs" />
     <Compile Include="Extensions\StringExtension.cs" />
     <Compile Include="Global.asax.cs">

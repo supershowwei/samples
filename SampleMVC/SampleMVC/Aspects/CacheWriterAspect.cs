@@ -5,6 +5,7 @@ using System.Reflection;
 using Castle.DynamicProxy;
 using Newtonsoft.Json;
 using SampleMVC.Attributes;
+using SampleMVC.Extensions;
 using SampleMVC.Helpers;
 
 namespace SampleMVC.Aspects
@@ -35,23 +36,8 @@ namespace SampleMVC.Aspects
 
         private static bool IsWriteInCache(IInvocation invocation, CacheAttribute cacheAttribute)
         {
-            return TryProceed(invocation) && invocation.Method.ReturnType != typeof(void) && cacheAttribute != null
+            return invocation.TryProceed() && invocation.Method.ReturnType != typeof(void) && cacheAttribute != null
                    && (cacheAttribute.Access & CacheAccess.Write) == CacheAccess.Write;
-        }
-
-        private static bool TryProceed(IInvocation invocation)
-        {
-            try
-            {
-                invocation.Proceed();
-
-                return true;
-            }
-            catch (InvalidOperationException)
-            {
-                // 序列未包含符合的項目，代表已被刪除。
-                return true;
-            }
         }
 
         private static void SetCache(string key, object value, int db, TimeSpan? timeout)
