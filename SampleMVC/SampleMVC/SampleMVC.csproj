@@ -135,7 +135,6 @@
     <Compile Include="Aspects\CacheWritingPublisherAspect.cs" />
     <Compile Include="Attributes\CacheAttribute.cs" />
     <Compile Include="Attributes\CachingPublisherAttribute.cs" />
-    <Compile Include="Attributes\DoNotUseCacheReaderAttribute.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ContenteditableTableController.cs" />
     <Compile Include="Controllers\ControllerExtension.cs" />
