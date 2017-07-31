@@ -132,9 +132,9 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Aspects\CacheReaderAspect.cs" />
     <Compile Include="Aspects\CacheWriterAspect.cs" />
-    <Compile Include="Aspects\CacheWritingTriggerAspect.cs" />
+    <Compile Include="Aspects\CacheWritingPublisherAspect.cs" />
     <Compile Include="Attributes\CacheAttribute.cs" />
-    <Compile Include="Attributes\CachingTriggerAttribute.cs" />
+    <Compile Include="Attributes\CachingPublisherAttribute.cs" />
     <Compile Include="Attributes\DoNotUseCacheReaderAttribute.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ContenteditableTableController.cs" />

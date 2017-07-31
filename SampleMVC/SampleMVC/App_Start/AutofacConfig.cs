@@ -20,7 +20,7 @@ namespace SampleMVC
             builder.RegisterType<ExceptionInterceptor>();
             builder.RegisterType<CacheReaderAspect>();
             builder.RegisterType<CacheWriterAspect>();
-            builder.RegisterType<CacheWritingTriggerAspect>();
+            builder.RegisterType<CacheWritingPublisherAspect>();
 
             builder.RegisterControllers(Assembly.GetExecutingAssembly());
 
@@ -33,7 +33,7 @@ namespace SampleMVC
                             Selector =
                                 new ExcludingInterceptors(
                                     typeof(CacheWriterAspect),
-                                    typeof(CacheWritingTriggerAspect))
+                                    typeof(CacheWritingPublisherAspect))
                         });
 
             builder.RegisterAssemblyTypes(Assembly.Load("SampleMVC.Logic"))

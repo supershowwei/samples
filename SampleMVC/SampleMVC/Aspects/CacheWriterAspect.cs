@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Castle.DynamicProxy;
 using Newtonsoft.Json;
@@ -14,6 +16,11 @@ namespace SampleMVC.Aspects
         public void Intercept(IInvocation invocation)
         {
             var cacheAttribute = invocation.MethodInvocationTarget.GetCustomAttribute<CacheAttribute>();
+
+            cacheAttribute = cacheAttribute
+                             ?? new StackTrace().GetFrames()
+                                 .Select(x => x.GetMethod().GetCustomAttribute<CacheAttribute>())
+                                 .FirstOrDefault(x => x != null);
 
             if (TryProceed(invocation, out object returnValue) && invocation.Method.ReturnType != typeof(void)
                 && cacheAttribute != null)

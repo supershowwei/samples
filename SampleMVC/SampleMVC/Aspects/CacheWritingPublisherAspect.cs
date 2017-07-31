@@ -12,9 +12,9 @@ using SampleMVC.Helpers;
 
 namespace SampleMVC.Aspects
 {
-    public class CacheWritingTriggerAspect : IInterceptor
+    public class CacheWritingPublisherAspect : IInterceptor
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(CacheWritingTriggerAspect));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(CacheWritingPublisherAspect));
 
         public int Order => -1;
 
@@ -23,7 +23,7 @@ namespace SampleMVC.Aspects
             invocation.Proceed();
 
             var cachingTriggerAttribute =
-                invocation.MethodInvocationTarget.GetCustomAttribute<CachingTriggerAttribute>();
+                invocation.MethodInvocationTarget.GetCustomAttribute<CachingPublisherAttribute>();
 
             if (cachingTriggerAttribute != null)
             {

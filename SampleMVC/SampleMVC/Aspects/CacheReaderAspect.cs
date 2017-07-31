@@ -18,7 +18,12 @@ namespace SampleMVC.Aspects
         {
             var cacheAttribute = invocation.MethodInvocationTarget.GetCustomAttribute<CacheAttribute>();
 
-            if (IsReadFromCache(invocation, cacheAttribute))
+            cacheAttribute = cacheAttribute
+                             ?? new StackTrace().GetFrames()
+                                 .Select(x => x.GetMethod().GetCustomAttribute<CacheAttribute>())
+                                 .FirstOrDefault(x => x != null);
+
+            if (cacheAttribute != null && invocation.Method.ReturnType != typeof(void))
             {
                 var key = CacheKeyHelper.GenerateKey(
                     invocation.MethodInvocationTarget,
@@ -55,19 +60,6 @@ namespace SampleMVC.Aspects
                 // TODO: Write Log
                 return default(RedisValue);
             }
-        }
-
-        private static bool IsReadFromCache(IInvocation invocation, CacheAttribute cacheAttribute)
-        {
-            if (cacheAttribute == null) return false;
-            if (invocation.Method.ReturnType == typeof(void)) return false;
-
-            return
-                !new StackTrace().GetFrames()
-                    .Any(
-                        x =>
-                            x.GetMethod()
-                                .CustomAttributes.Any(a => a.AttributeType == typeof(DoNotUseCacheReaderAttribute)));
         }
     }
 }
