@@ -23,7 +23,7 @@ namespace SampleMVC.Aspects
                                  .Select(x => x.GetMethod().GetCustomAttribute<CacheAttribute>())
                                  .FirstOrDefault(x => x != null);
 
-            if (cacheAttribute != null && invocation.Method.ReturnType != typeof(void))
+            if (IsReadFromCache(invocation, cacheAttribute))
             {
                 var key = CacheKeyHelper.GenerateKey(
                     invocation.MethodInvocationTarget,
@@ -45,6 +45,12 @@ namespace SampleMVC.Aspects
             {
                 invocation.Proceed();
             }
+        }
+
+        private static bool IsReadFromCache(IInvocation invocation, CacheAttribute cacheAttribute)
+        {
+            return cacheAttribute != null && (cacheAttribute.Access & CacheAccess.Read) == CacheAccess.Read
+                   && invocation.Method.ReturnType != typeof(void);
         }
 
         private static RedisValue GetCache(string key, int db)

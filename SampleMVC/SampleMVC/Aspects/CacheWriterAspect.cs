@@ -22,27 +22,28 @@ namespace SampleMVC.Aspects
                                  .Select(x => x.GetMethod().GetCustomAttribute<CacheAttribute>())
                                  .FirstOrDefault(x => x != null);
 
-            if (TryProceed(invocation, out object returnValue) && invocation.Method.ReturnType != typeof(void)
-                && cacheAttribute != null)
+            if (IsWriteInCache(invocation, cacheAttribute))
             {
                 var key = CacheKeyHelper.GenerateKey(
                     invocation.MethodInvocationTarget,
                     invocation.Arguments,
                     cacheAttribute.Template);
 
-                SetCache(key, returnValue, cacheAttribute.Db, cacheAttribute.Timeout);
+                SetCache(key, invocation.ReturnValue, cacheAttribute.Db, cacheAttribute.Timeout);
             }
         }
 
-        private static bool TryProceed(IInvocation invocation, out object returnValue)
+        private static bool IsWriteInCache(IInvocation invocation, CacheAttribute cacheAttribute)
         {
-            returnValue = null;
+            return TryProceed(invocation) && invocation.Method.ReturnType != typeof(void) && cacheAttribute != null
+                   && (cacheAttribute.Access & CacheAccess.Write) == CacheAccess.Write;
+        }
 
+        private static bool TryProceed(IInvocation invocation)
+        {
             try
             {
                 invocation.Proceed();
-
-                returnValue = invocation.ReturnValue;
 
                 return true;
             }
