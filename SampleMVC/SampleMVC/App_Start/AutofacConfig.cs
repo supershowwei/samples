@@ -31,7 +31,7 @@ namespace SampleMVC
                     new ProxyGenerationOptions
                         {
                             Selector =
-                                new ExcludingInterceptors(
+                                new OrderingInterceptors(
                                     typeof(CacheWriterAspect),
                                     typeof(CacheWritingPublisherAspect))
                         });
@@ -46,11 +46,11 @@ namespace SampleMVC
         }
     }
 
-    internal class ExcludingInterceptors : IInterceptorSelector
+    internal class OrderingInterceptors : IInterceptorSelector
     {
         private readonly Type[] excludeds;
 
-        public ExcludingInterceptors(params Type[] excludeds)
+        public OrderingInterceptors(params Type[] excludeds)
         {
             this.excludeds = excludeds;
         }
