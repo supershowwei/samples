@@ -16,6 +16,16 @@ namespace SampleMVC.Filters
                 filterContext.Exception.GetBaseException().Message,
                 TryGetString(filterContext.HttpContext.Request.InputStream),
                 filterContext.Exception.StackTrace);
+
+            if (!filterContext.HttpContext.IsDebuggingEnabled)
+            {
+                filterContext.Result = new ViewResult { ViewName = "~/Views/Error/InternalServerError.cshtml" };
+
+                filterContext.ExceptionHandled = true;
+                filterContext.HttpContext.Response.Clear();
+                filterContext.HttpContext.Response.StatusCode = 500;
+                filterContext.HttpContext.Response.TrySkipIisCustomErrors = true;
+            }
         }
 
         private static string TryGetString(Stream inputStream)
