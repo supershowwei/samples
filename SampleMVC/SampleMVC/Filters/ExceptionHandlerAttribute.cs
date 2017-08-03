@@ -10,7 +10,7 @@ namespace SampleMVC.Filters
         public void OnException(ExceptionContext filterContext)
         {
             WriteLog(
-                "{0} '{1}' occur exception '{2}'\r\n\r\n Arguments:\r\n{3}\r\n\r\nStackTrace:\r\n{4}",
+                "{0} '{1}' occur exception '{2}'\r\n\r\nArguments:\r\n{3}\r\n\r\nStackTrace:\r\n{4}",
                 filterContext.HttpContext.Request.HttpMethod,
                 filterContext.HttpContext.Request.Url.AbsoluteUri,
                 filterContext.Exception.GetBaseException().Message,
