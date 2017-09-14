@@ -22,8 +22,8 @@ namespace SampleMVC.Helpers
 
             if (value.Equals(arg.GetType().FullName, StringComparison.OrdinalIgnoreCase))
             {
-                value = string.Format(
-                    "{{{0}}}",
+                value = string.Concat(
+                    "{",
                     string.Join(
                         ",",
                         arg.GetType().GetProperties().Select(
@@ -32,7 +32,8 @@ namespace SampleMVC.Helpers
                                 var argValue = p.GetValue(arg);
 
                                 return argValue?.ToString() ?? string.Empty;
-                            })));
+                            })),
+                    "}");
             }
 
             return value;
