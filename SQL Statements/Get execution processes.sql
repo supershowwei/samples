@@ -25,4 +25,4 @@ LEFT JOIN sys.databases d
     ON (r.database_id = d.database_id)
 WHERE r.session_id > 50
 AND r.session_id <> @@spid
-ORDER BY r.total_elapsed_time DESC
+ORDER BY r.cpu_time DESC
