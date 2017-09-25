@@ -17,8 +17,8 @@ SELECT
    ,r.reads AS [讀取數]
    ,r.writes AS [寫入數]
    ,r.logical_reads AS [邏輯讀取數]
-   ,q.text /* 完整的 T-SQL 指令碼 */
    ,d.name AS [資料庫名稱]
+   ,q.text /* 完整的 T-SQL 指令碼 */
 FROM sys.dm_exec_requests r
 CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS q
 LEFT JOIN sys.databases d
