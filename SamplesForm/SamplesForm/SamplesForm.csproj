@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helper\Base32.cs" />
     <Compile Include="JsonConverters\FieldJsonConverter.cs" />
     <Compile Include="ThreadSafeBoolean.cs" />
     <Content Include="Aspects\ExceptionIntercepterAttribute.cs">
