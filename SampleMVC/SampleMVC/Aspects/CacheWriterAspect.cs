@@ -37,7 +37,8 @@ namespace SampleMVC.Aspects
         private static bool IsWriteInCache(IInvocation invocation, CacheAttribute cacheAttribute)
         {
             return invocation.TryProceed() && invocation.Method.ReturnType != typeof(void) && cacheAttribute != null
-                   && (cacheAttribute.Access & CacheAccess.Write) == CacheAccess.Write;
+                   && (cacheAttribute.Access & CacheAccess.Write) == CacheAccess.Write
+                   && RedisHelper.Instance.Connection != null;
         }
 
         private static void SetCache(string key, object value, int db, TimeSpan? timeout)

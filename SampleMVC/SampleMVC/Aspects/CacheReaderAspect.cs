@@ -50,7 +50,7 @@ namespace SampleMVC.Aspects
         private static bool IsReadFromCache(IInvocation invocation, CacheAttribute cacheAttribute)
         {
             return cacheAttribute != null && (cacheAttribute.Access & CacheAccess.Read) == CacheAccess.Read
-                   && invocation.Method.ReturnType != typeof(void);
+                   && invocation.Method.ReturnType != typeof(void) && RedisHelper.Instance.Connection != null;
         }
 
         private static RedisValue GetCache(string key, int db)

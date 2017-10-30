@@ -7,13 +7,13 @@ namespace SampleMVC.Helpers
 {
     internal class CacheKeyHelper
     {
-        public static string GenerateKey(MethodInfo method, object[] arguments, string input)
+        public static string GenerateKey(MethodInfo method, object[] arguments, string template)
         {
             var key = string.Join(",", arguments.Select(x => x != null ? GetArgumentValue(x) : string.Empty));
 
-            return string.IsNullOrEmpty(input)
+            return string.IsNullOrEmpty(template)
                        ? $"{method.DeclaringType.Name}.{method.Name}({key})"
-                       : Regex.Replace(input, "{key}", key);
+                       : Regex.Replace(template, "{key}", key);
         }
 
         private static string GetArgumentValue(object arg)
