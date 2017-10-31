@@ -6,7 +6,7 @@ namespace SampleMVC.Helpers
     internal class RedisHelper : IDisposable
     {
         public static readonly RedisHelper Instance = new RedisHelper();
-        private readonly string redisHost = "amqp://{UserName}:{Password}@{Host}";
+        private readonly string redisHost = "{Host}:{Port}";
 
         private ConnectionMultiplexer connection;
 
