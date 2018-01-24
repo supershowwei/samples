@@ -49,3 +49,12 @@ FROM msdb.dbo.sysjobs jobs
 JOIN msdb.dbo.sysjobsteps jobsteps
     ON jobs.job_id = jobsteps.job_id
 WHERE jobsteps.command LIKE '%KEYWORD%'
+    OR jobs.job_id IN ('JOB_ID')
+
+
+SELECT
+    *
+FROM msdb.dbo.sysjobactivity s WITH (NOLOCK)
+WHERE s.start_execution_date >= '2018-01-02 11:10:00'
+    AND DATEDIFF(SECOND, s.start_execution_date, s.stop_execution_date) > 60
+ORDER BY s.job_id

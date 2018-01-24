@@ -33,6 +33,7 @@ INNER JOIN (SELECT
     AND ix.index_id = pc.index_id
 WHERE ps.avg_fragmentation_in_percent > 10
 AND ix.name IS NOT NULL
+--AND t.name = 'ClubChatroom'
 
 OPEN OptimizedCursor
 FETCH NEXT FROM OptimizedCursor INTO @OptimizationSql
