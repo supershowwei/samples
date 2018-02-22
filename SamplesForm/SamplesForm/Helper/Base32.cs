@@ -6,14 +6,14 @@ namespace SamplesForm.Helper
     {
         private static readonly string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
-        public static string Decode(string value)
-        {
-            return Decode(value, Encoding.UTF8);
-        }
-
         public static string Encode(string value)
         {
             return Encode(value, Encoding.UTF8);
+        }
+
+        public static string Decode(string value)
+        {
+            return Decode(value, Encoding.UTF8);
         }
 
         private static string Encode(string value, Encoding encoding)
