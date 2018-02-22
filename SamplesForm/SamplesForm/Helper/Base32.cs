@@ -16,7 +16,7 @@ namespace SamplesForm.Helper
             return Encode(value, Encoding.UTF8);
         }
 
-        public static string Encode(string value, Encoding encoding)
+        private static string Encode(string value, Encoding encoding)
         {
             if (string.IsNullOrEmpty(value)) return null;
 
