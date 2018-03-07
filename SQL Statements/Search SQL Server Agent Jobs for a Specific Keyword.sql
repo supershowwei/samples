@@ -52,6 +52,16 @@ WHERE jobsteps.command LIKE '%KEYWORD%'
     OR jobs.job_id IN ('JOB_ID')
 
 
+--
+SELECT
+    *
+FROM msdb.dbo.sysschedules schecules
+LEFT JOIN msdb.dbo.sysjobschedules jobschedules
+    ON schecules.schedule_id = jobschedules.schedule_id
+WHERE schecules.active_start_time = '30000'
+
+
+--
 SELECT
     *
 FROM msdb.dbo.sysjobactivity s WITH (NOLOCK)
