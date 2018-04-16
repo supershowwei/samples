@@ -24,6 +24,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -131,10 +132,13 @@
     <Compile Include="App_Start\AutofacConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Aspects\CacheReaderAspect.cs" />
+    <Compile Include="Aspects\CacheRemoveAspect.cs" />
     <Compile Include="Aspects\CacheWriterAspect.cs" />
     <Compile Include="Aspects\CacheWritingPublisherAspect.cs" />
     <Compile Include="Attributes\CacheAttribute.cs" />
     <Compile Include="Attributes\CachingPublisherAttribute.cs" />
+    <Compile Include="Attributes\UncacheAttribute.cs" />
+    <Compile Include="Containers\UncacheKeyContainer.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ContenteditableTableController.cs" />
     <Compile Include="Controllers\ControllerExtension.cs" />
