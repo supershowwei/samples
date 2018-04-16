@@ -153,6 +153,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\CacheKeyHelper.cs" />
+    <Compile Include="Helpers\MethodInfoHelper.cs" />
     <Compile Include="Helpers\RabbitMQHelper.cs" />
     <Compile Include="HttpModules\AttackPrevention.cs" />
     <Compile Include="HttpModules\HitsInfo.cs" />
