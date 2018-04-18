@@ -2,7 +2,7 @@
 using Castle.DynamicProxy;
 using log4net;
 using Newtonsoft.Json;
-using SampleMVC.Models;
+using SampleMVC.Protocol.Model.Results;
 
 namespace SampleMVC.Interceptors
 {
@@ -20,7 +20,7 @@ namespace SampleMVC.Interceptors
             {
                 this.log = LogManager.GetLogger(invocation.InvocationTarget.GetType());
 
-                var serviceResult = Activator.CreateInstance(invocation.Method.ReturnType) as ServiceResult;
+                var serviceResult = Activator.CreateInstance(invocation.Method.ReturnType) as IResult;
                 serviceResult.IsFailure = true;
                 serviceResult.Message = ex.GetBaseException().Message;
 
