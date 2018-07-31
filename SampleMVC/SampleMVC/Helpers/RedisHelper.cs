@@ -21,7 +21,7 @@ namespace SampleMVC.Helpers
                 if (string.IsNullOrEmpty(this.redisHost)) return null;
 
                 return this.connection == null || !this.connection.IsConnected
-                    ? (this.connection = ConnectionMultiplexer.Connect(this.redisHost))
+                    ? (this.connection = this.TryConnect())
                     : this.connection;
             }
         }
@@ -29,6 +29,20 @@ namespace SampleMVC.Helpers
         public void Dispose()
         {
             this.connection?.Dispose();
+        }
+
+        private ConnectionMultiplexer TryConnect()
+        {
+            try
+            {
+                return ConnectionMultiplexer.Connect(this.redisHost);
+            }
+            catch
+            {
+                // ignored
+            }
+
+            return null;
         }
     }
 }
