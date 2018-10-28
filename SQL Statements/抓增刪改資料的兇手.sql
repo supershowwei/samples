@@ -8,8 +8,8 @@ SELECT
    ,d.[name] AS local_database_name
    ,s.login_name
    ,(SELECT
-            q.[text]
-        FROM sys.dm_exec_sql_text(r.sql_handle) q)
+            ib.event_info
+        FROM sys.dm_exec_input_buffer(r.session_id, r.request_id) ib)
     AS sql_text
 FROM sys.dm_exec_connections c
 INNER JOIN sys.dm_exec_sessions s
