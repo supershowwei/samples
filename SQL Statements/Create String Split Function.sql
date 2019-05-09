@@ -7,7 +7,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE FUNCTION string_split
+CREATE FUNCTION split_string
 (
     @string NVARCHAR(MAX)
    ,@separator NVARCHAR(MAX)
@@ -17,7 +17,7 @@ RETURNS @result TABLE (
 )
 BEGIN
     DECLARE @xml XML;
-
+    
     SET @xml = CAST('<d>' + REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@string, '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;'), '''', '&apos;'), @separator, '</d><d>') + '</d>' AS XML);
 
     INSERT INTO @result([value])
