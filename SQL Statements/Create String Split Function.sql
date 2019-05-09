@@ -7,7 +7,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE FUNCTION fn_string_split
+CREATE FUNCTION string_split
 (
     @string NVARCHAR(MAX)
    ,@separator NVARCHAR(MAX)
@@ -27,8 +27,4 @@ BEGIN
 
     RETURN
 END
-GO
-
--- Mark as system object
-EXEC sp_MS_marksystemobject 'fn_string_split'
 GO
