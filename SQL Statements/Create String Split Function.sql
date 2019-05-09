@@ -1,21 +1,9 @@
--- ================================================
--- Template generated from Template Explorer using:
--- Create Inline Function (New Menu).SQL
---
--- Use the Specify Values for Template Parameters 
--- command (Ctrl-Shift-M) to fill in the parameter 
--- values below.
---
--- This block of comments will not be included in
--- the definition of the function.
--- ================================================
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
--- Prefix must be 'sp_'
-CREATE FUNCTION sp_string_split
+CREATE FUNCTION fn_string_split
 (
     @string NVARCHAR(MAX)
    ,@separator NVARCHAR(MAX)
@@ -38,5 +26,5 @@ END
 GO
 
 -- Mark as system object
-EXEC sys.sp_MS_marksystemobject 'sp_string_split'
+EXEC sys.sp_MS_marksystemobject 'fn_string_split'
 GO
