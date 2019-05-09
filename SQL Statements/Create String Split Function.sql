@@ -30,5 +30,5 @@ END
 GO
 
 -- Mark as system object
-EXEC sys.sp_MS_marksystemobject 'fn_string_split'
+EXEC sp_MS_marksystemobject 'fn_string_split'
 GO
