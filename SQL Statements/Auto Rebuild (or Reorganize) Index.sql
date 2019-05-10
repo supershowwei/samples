@@ -1,6 +1,6 @@
 DECLARE @OptimizationSql NVARCHAR(MAX)
 DECLARE OptimizedCursor CURSOR LOCAL STATIC FORWARD_ONLY READ_ONLY FOR SELECT
-    'ALTER INDEX [' + ix.name + '] ON [' + s.name + '].[' + t.name + '] ' +
+    'ALTER INDEX [' + ix.[name] + '] ON [' + s.[name] + '].[' + t.[name] + '] ' +
     CASE
         WHEN ps.avg_fragmentation_in_percent > 15 THEN 'REBUILD'
         ELSE 'REORGANIZE'
@@ -32,8 +32,8 @@ INNER JOIN (SELECT
     ON t.object_id = pc.object_id
     AND ix.index_id = pc.index_id
 WHERE ps.avg_fragmentation_in_percent > 10
-AND ix.name IS NOT NULL
---AND t.name = 'ClubChatroom'
+AND ix.[name] IS NOT NULL
+--AND t.[name] = 'ClubChatroom'
 
 OPEN OptimizedCursor
 FETCH NEXT FROM OptimizedCursor INTO @OptimizationSql
