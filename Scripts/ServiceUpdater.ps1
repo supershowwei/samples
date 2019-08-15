@@ -5,7 +5,7 @@ param([string] $service = "",
 
 if (-Not (Test-Path $ready)) { Exit }
 
-Stop-Service -Name $service
+Get-Service $service | Stop-Service
 
 while (Get-Process $process -ErrorAction SilentlyContinue)
 {
@@ -14,4 +14,4 @@ while (Get-Process $process -ErrorAction SilentlyContinue)
 
 Copy-Item -Force -Recurse $ready -Destination $running
 Remove-Item -Force -Recurse $ready
-Start-Service -Name $service
+Get-Service $service | Start-Service
