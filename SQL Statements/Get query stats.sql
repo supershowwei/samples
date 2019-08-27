@@ -1,4 +1,4 @@
-SELECT
+SELECT TOP 100
     SUBSTRING(text, qs.statement_start_offset / 2
     , (CASE
         WHEN qs.statement_end_offset = -1 THEN LEN(CONVERT(NVARCHAR(MAX),
@@ -17,6 +17,6 @@ FROM sys.dm_exec_query_stats qs
 CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
 LEFT JOIN sys.dm_exec_requests r
     ON qs.sql_handle = r.sql_handle
-WHERE qs.last_execution_time >= '2019-08-07 08:00:00'
---ORDER BY cpu_time / execution_count DESC
-ORDER BY qs.last_execution_time DESC
+WHERE qs.last_execution_time >= '2019-08-27 08:00:00'
+ORDER BY cpu_time / execution_count DESC
+--ORDER BY qs.last_execution_time DESC
