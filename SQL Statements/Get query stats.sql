@@ -18,5 +18,5 @@ CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
 LEFT JOIN sys.dm_exec_requests r
     ON qs.sql_handle = r.sql_handle
 WHERE qs.last_execution_time >= '2019-08-27 08:00:00'
-ORDER BY cpu_time / execution_count DESC
+ORDER BY qs.total_worker_time / qs.execution_count DESC
 --ORDER BY qs.last_execution_time DESC
