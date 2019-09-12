@@ -2,9 +2,9 @@
 <CodeSnippets>
   <CodeSnippet Format="1.0.0">
     <Header>
-      <Title>Select With Nolock</Title>
-      <Shortcut>ssfnl</Shortcut>
-      <Description>SELECT * FROM statement WITH (NOLOCK)</Description>
+      <Title>SelectTopWithNolock</Title>
+      <Shortcut>seltwn</Shortcut>
+      <Description>SELECT TOP ? * FROM WITH (NOLCK)</Description>
       <Author>Devart</Author>
       <SnippetTypes>
         <SnippetType>Expansion</SnippetType>
@@ -13,11 +13,15 @@
     <Snippet>
       <Declarations>
         <Literal>
+          <ID>count</ID>
+          <Default>100</Default>
+        </Literal>
+        <Literal>
           <ID>table_name</ID>
           <Default>table_name</Default>
         </Literal>
       </Declarations>
-      <Code Language="SQL Server" Kind="SQL Server"><![CDATA[SELECT *
+      <Code Language="SQL Server" Kind="SQL Server"><![CDATA[SELECT TOP $count$ *
 FROM $table_name$ WITH (NOLOCK)
 WHERE $CARET$]]></Code>
     </Snippet>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets>
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>SelectWithNolock</Title>
+      <Shortcut>ssfwn</Shortcut>
+      <Description>SELECT * FROM statement WITH (NOLOCK)</Description>
+      <Author>Devart</Author>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <ID>table_name</ID>
+          <Default>table_name</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="SQL Server" Kind="SQL Server"><![CDATA[SELECT *
+FROM $table_name$ WITH (NOLOCK)
+WHERE $CARET$]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
