@@ -1,18 +1,14 @@
-﻿namespace ArchitectSample
-{
-    public class TestClass
-    {
-        public void Test()
-        {
-            ServiceResult<int, int> failure = ServiceResult.Failure("failure");
-            ServiceResult<int, int> abnormal = ServiceResult.Abnormal("abnormal", 999);
-        }
-    }
+﻿using System;
 
+namespace ArchitectSample
+{
     public class ServiceResult : IResult
     {
         public ServiceResult(bool isSuccess, bool isFailure, int code, string message)
         {
+            if (isSuccess && code != 0) throw new ArgumentException("Code must be zero when result is success.", nameof(code));
+            if (isFailure && code != int.MinValue) throw new ArgumentException("Code must be minimum int value when result is failure.", nameof(code));
+
             this.IsSuccess = isSuccess;
             this.IsFailure = isFailure;
             this.Code = code;
@@ -62,6 +58,9 @@
     {
         public ServiceResult(bool isSuccess, bool isFailure, int code, string message, TValue value)
         {
+            if (isSuccess && code != 0) throw new ArgumentException("Code must be zero when result is success.", nameof(code));
+            if (isFailure && code != int.MinValue) throw new ArgumentException("Code must be minimum int value when result is failure.", nameof(code));
+
             this.IsSuccess = isSuccess;
             this.IsFailure = isFailure;
             this.Code = code;
@@ -84,6 +83,11 @@
             return new ServiceResult<TValue>(result.IsSuccess, result.IsFailure, result.Code, result.Message, default(TValue));
         }
 
+        public static ServiceResult<TValue> Failure(string message)
+        {
+            return new ServiceResult<TValue>(false, true, int.MinValue, message, default(TValue));
+        }
+
         public void Deconstruct(out TValue value)
         {
             value = this.Value;
@@ -100,6 +104,9 @@
     {
         public ServiceResult(bool isSuccess, bool isFailure, int code, string message, TValue1 value1, TValue2 value2)
         {
+            if (isSuccess && code != 0) throw new ArgumentException("Code must be zero when result is success.", nameof(code));
+            if (isFailure && code != int.MinValue) throw new ArgumentException("Code must be minimum int value when result is failure.", nameof(code));
+
             this.IsSuccess = isSuccess;
             this.IsFailure = isFailure;
             this.Code = code;
@@ -131,6 +138,11 @@
                 default(TValue2));
         }
 
+        public static ServiceResult<TValue1, TValue2> Failure(string message)
+        {
+            return new ServiceResult<TValue1, TValue2>(false, true, int.MinValue, message, default(TValue1), default(TValue2));
+        }
+
         public void Deconstruct(out TValue1 value1, out TValue2 value2)
         {
             value1 = this.Value1;
@@ -149,6 +161,9 @@
     {
         public ServiceResult(bool isSuccess, bool isFailure, int code, string message, TValue1 value1, TValue2 value2, TValue3 value3)
         {
+            if (isSuccess && code != 0) throw new ArgumentException("Code must be zero when result is success.", nameof(code));
+            if (isFailure && code != int.MinValue) throw new ArgumentException("Code must be minimum int value when result is failure.", nameof(code));
+
             this.IsSuccess = isSuccess;
             this.IsFailure = isFailure;
             this.Code = code;
@@ -179,6 +194,18 @@
                 result.IsFailure,
                 result.Code,
                 result.Message,
+                default(TValue1),
+                default(TValue2),
+                default(TValue3));
+        }
+
+        public static ServiceResult<TValue1, TValue2, TValue3> Failure(string message)
+        {
+            return new ServiceResult<TValue1, TValue2, TValue3>(
+                false,
+                true,
+                int.MinValue,
+                message,
                 default(TValue1),
                 default(TValue2),
                 default(TValue3));
