@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using ArchitectSample.Protocol.Model.Data;
-using ArchitectSample.Protocol.Physical;
 
 namespace ArchitectSample.Physical.Repositories
 {
-    public partial class ClubRepository : IClubRepository
+    public partial class ClubRepository
     {
-        public List<Member> QueryMembers(int clubId)
+        public List<ClubArticle> QueryArticles(int clubId, DateTime startPublicationTime, DateTime endPublicationTime)
         {
             throw new NotImplementedException();
         }

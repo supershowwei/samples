@@ -8,4 +8,10 @@
     <ProjectReference Include="..\ArchitectSample.Protocol\ArchitectSample.Protocol.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Repositories\ClubRepository.*.cs">
+      <DependentUpon>ClubRepository.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>
