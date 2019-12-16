@@ -1,4 +1,5 @@
 using System.Reflection;
+using ArchitectSample.Model.Results;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ArchitectSample.Tests

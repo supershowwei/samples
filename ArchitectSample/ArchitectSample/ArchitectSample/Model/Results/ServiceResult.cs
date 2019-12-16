@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ArchitectSample
+namespace ArchitectSample.Model.Results
 {
     public class ServiceResult : IResult
     {
