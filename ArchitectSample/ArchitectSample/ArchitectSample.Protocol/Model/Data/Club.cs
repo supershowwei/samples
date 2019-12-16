@@ -1,6 +1,6 @@
-﻿namespace ArchitectSample.Model.Data
+﻿namespace ArchitectSample.Protocol.Model.Data
 {
-    public class Member
+    public class Club
     {
         public int Id { get; set; }
 

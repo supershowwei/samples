@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ArchitectSample\ArchitectSample.csproj" />
+    <ProjectReference Include="..\ArchitectSample.Protocol\ArchitectSample.Protocol.csproj" />
   </ItemGroup>
 
 </Project>

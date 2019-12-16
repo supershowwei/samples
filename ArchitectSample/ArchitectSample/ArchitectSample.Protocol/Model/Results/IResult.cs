@@ -1,4 +1,4 @@
-﻿namespace ArchitectSample
+﻿namespace ArchitectSample.Protocol.Model.Results
 {
     public interface IResult
     {
