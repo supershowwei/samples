@@ -1,17 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
+using Chef.Extensions.Dapper;
+using Dapper;
 
 namespace ArchitectSample.Physical.DataAccesses
 {
     public class ClubDataAccess : IDataAccess<Club>
     {
-        public Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
+        public async Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
         {
-            throw new NotImplementedException();
+            SqlBuilder sql = @"
+SELECT
+    *
+FROM Club c WITH (NOLOCK)
+WHERE ";
+
+            sql += predicate.ToSearchCondition(out var parameters);
+
+            using (var db = new SqlConnection(""))
+            {
+                var result = await db.QuerySingleOrDefaultAsync<Club>(sql, parameters);
+
+                return result;
+            }
         }
 
         public Task<Club> QueryOneAsync(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)

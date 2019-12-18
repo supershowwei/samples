@@ -1,8 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Chef.Extensions.Dapper" Version="2.0.2" />
+    <PackageReference Include="Dapper" Version="1.60.6" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ArchitectSample.Protocol\ArchitectSample.Protocol.csproj" />
