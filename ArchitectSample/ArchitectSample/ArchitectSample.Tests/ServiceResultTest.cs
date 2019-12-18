@@ -21,7 +21,7 @@ namespace ArchitectSample.Tests
         {
             var failureMethod = typeof(ServiceResult<int, int>).GetMethod("Failure", BindingFlags.Public | BindingFlags.Static);
             
-            var objFailure = failureMethod.Invoke(null, new[] { "failure" });
+            var objFailure = failureMethod.Invoke(null, new object[] { "failure" });
 
             Assert.AreEqual(objFailure.GetType(), typeof(ServiceResult<int, int>));
         }

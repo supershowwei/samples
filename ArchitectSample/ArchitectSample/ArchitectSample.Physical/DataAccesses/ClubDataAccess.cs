@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
 
@@ -8,42 +9,42 @@ namespace ArchitectSample.Physical.DataAccesses
 {
     public class ClubDataAccess : IDataAccess<Club>
     {
-        public Club QueryOne(Expression<Func<Club, bool>> predicate)
+        public Task<Club> QueryOneAsnyc(Expression<Func<Club, bool>> predicate)
         {
             throw new NotImplementedException();
         }
 
-        public Club QueryOne(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
+        public Task<Club> QueryOneAsnyc(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
         {
             throw new NotImplementedException();
         }
 
-        public List<Club> Query(Expression<Func<Club, bool>> predicate)
+        public Task<List<Club>> QueryAsync(Expression<Func<Club, bool>> predicate)
         {
             throw new NotImplementedException();
         }
 
-        public List<Club> Query(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
+        public Task<List<Club>> QueryAsync(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
         {
             throw new NotImplementedException();
         }
 
-        public void Insert(Club value)
+        public Task InsertAsync(Club value)
         {
             throw new NotImplementedException();
         }
 
-        public void Insert(Expression<Func<Club>> setters)
+        public Task InsertAsync(Expression<Func<Club>> setters)
         {
             throw new NotImplementedException();
         }
 
-        public void Update(Expression<Func<Club>> setters, Expression<Func<Club, bool>> predicate)
+        public Task UpdateAsync(Expression<Func<Club>> setters, Expression<Func<Club, bool>> predicate)
         {
             throw new NotImplementedException();
         }
 
-        public void Delete(Expression<Func<Club, bool>> predicate)
+        public Task DeleteAsync(Expression<Func<Club, bool>> predicate)
         {
             throw new NotImplementedException();
         }

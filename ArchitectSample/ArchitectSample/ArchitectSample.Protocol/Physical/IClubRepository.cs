@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using ArchitectSample.Protocol.Model.Data;
 
 namespace ArchitectSample.Protocol.Physical
 {
     public interface IClubRepository
     {
-        List<Member> QueryMembers(int clubId);
+        Task<List<Member>> QueryMembersAsync(int clubId);
 
-        List<ClubArticle> QueryArticles(int clubId, DateTime startPublicationTime, DateTime endPublicationTime);
+        Task<List<ClubArticle>> QueryArticlesAsync(int clubId, DateTime startPublicationTime, DateTime endPublicationTime);
     }
 }

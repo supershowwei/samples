@@ -1,25 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace ArchitectSample.Protocol.Physical
 {
     public interface IDataAccess<T>
     {
-        T QueryOne(Expression<Func<T, bool>> predicate);
+        Task<T> QueryOneAsnyc(Expression<Func<T, bool>> predicate);
 
-        T QueryOne(Expression<Func<T, object>> selector, Expression<Func<T, bool>> predicate);
+        Task<T> QueryOneAsnyc(Expression<Func<T, object>> selector, Expression<Func<T, bool>> predicate);
 
-        List<T> Query(Expression<Func<T, bool>> predicate);
+        Task<List<T>> QueryAsync(Expression<Func<T, bool>> predicate);
 
-        List<T> Query(Expression<Func<T, object>> selector, Expression<Func<T, bool>> predicate);
+        Task<List<T>> QueryAsync(Expression<Func<T, object>> selector, Expression<Func<T, bool>> predicate);
 
-        void Insert(T value);
+        Task InsertAsync(T value);
 
-        void Insert(Expression<Func<T>> setters);
+        Task InsertAsync(Expression<Func<T>> setters);
 
-        void Update(Expression<Func<T>> setters, Expression<Func<T, bool>> predicate);
+        Task UpdateAsync(Expression<Func<T>> setters, Expression<Func<T, bool>> predicate);
 
-        void Delete(Expression<Func<T, bool>> predicate);
+        Task DeleteAsync(Expression<Func<T, bool>> predicate);
     }
 }
