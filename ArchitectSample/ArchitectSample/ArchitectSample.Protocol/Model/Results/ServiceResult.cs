@@ -88,11 +88,6 @@ namespace ArchitectSample.Protocol.Model.Results
             return new ServiceResult<TValue>(false, true, int.MinValue, message, default(TValue));
         }
 
-        public void Deconstruct(out TValue value)
-        {
-            value = this.Value;
-        }
-
         public void Deconstruct(out IResult result, out TValue value)
         {
             result = new ServiceResult(this.IsSuccess, this.IsFailure, this.Code, this.Message);
@@ -141,12 +136,6 @@ namespace ArchitectSample.Protocol.Model.Results
         public static ServiceResult<TValue1, TValue2> Failure(string message)
         {
             return new ServiceResult<TValue1, TValue2>(false, true, int.MinValue, message, default(TValue1), default(TValue2));
-        }
-
-        public void Deconstruct(out TValue1 value1, out TValue2 value2)
-        {
-            value1 = this.Value1;
-            value2 = this.Value2;
         }
 
         public void Deconstruct(out IResult result, out TValue1 value1, out TValue2 value2)
@@ -209,13 +198,6 @@ namespace ArchitectSample.Protocol.Model.Results
                 default(TValue1),
                 default(TValue2),
                 default(TValue3));
-        }
-
-        public void Deconstruct(out TValue1 value1, out TValue2 value2, out TValue3 value3)
-        {
-            value1 = this.Value1;
-            value2 = this.Value2;
-            value3 = this.Value3;
         }
 
         public void Deconstruct(out IResult result, out TValue1 value1, out TValue2 value2, out TValue3 value3)

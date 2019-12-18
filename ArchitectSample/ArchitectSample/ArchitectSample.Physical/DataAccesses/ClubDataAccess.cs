@@ -12,15 +12,20 @@ namespace ArchitectSample.Physical.DataAccesses
 {
     public class ClubDataAccess : IDataAccess<Club>
     {
-        public async Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
+        public Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Club> QueryOneAsync(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
         {
             SqlBuilder sql = @"
-SELECT
-    *
+SELECT ";
+            sql += selector.ToSelectList("c");
+            sql += @"
 FROM Club c WITH (NOLOCK)
 WHERE ";
-
-            sql += predicate.ToSearchCondition(out var parameters);
+            sql += predicate.ToSearchCondition("c", out var parameters);
 
             using (var db = new SqlConnection(""))
             {
@@ -28,11 +33,6 @@ WHERE ";
 
                 return result;
             }
-        }
-
-        public Task<Club> QueryOneAsync(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
-        {
-            throw new NotImplementedException();
         }
 
         public Task<List<Club>> QueryAsync(Expression<Func<Club, bool>> predicate)

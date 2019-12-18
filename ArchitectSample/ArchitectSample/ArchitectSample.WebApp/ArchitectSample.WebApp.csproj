@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Club\Data\" />
+    <Folder Include="Areas\Club\Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ArchitectSample.Logic\ArchitectSample.Logic.csproj" />
+    <ProjectReference Include="..\ArchitectSample.Physical\ArchitectSample.Physical.csproj" />
+    <ProjectReference Include="..\ArchitectSample.Protocol\ArchitectSample.Protocol.csproj" />
+  </ItemGroup>
+
+
+
+</Project>
