@@ -8,10 +8,10 @@ namespace ArchitectSample.Protocol.Logic
 {
     public interface IClubService
     {
-        Task<ServiceResult<Club>> GetClub(int clubId);
+        Task<ServiceResult<Club>> GetClubAsync(int clubId);
 
-        Task<ServiceResult<List<ClubArticle>>> ListArticles(int clubId, DateTime startPublicationTime, DateTime endPublicationTime);
+        Task<ServiceResult<List<ClubArticle>>> ListArticlesAsync(int clubId, DateTime startPublicationTime, DateTime endPublicationTime);
 
-        Task<ServiceResult<List<Member>>> ListMembers(int clubId);
+        Task<ServiceResult<List<Member>>> ListMembersAsync(int clubId);
     }
 }

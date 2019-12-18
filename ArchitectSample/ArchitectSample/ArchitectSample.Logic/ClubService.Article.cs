@@ -8,7 +8,7 @@ namespace ArchitectSample.Logic
 {
     public partial class ClubService
     {
-        public async Task<ServiceResult<List<ClubArticle>>> ListArticles(int clubId, DateTime startPublicationTime, DateTime endPublicationTime)
+        public async Task<ServiceResult<List<ClubArticle>>> ListArticlesAsync(int clubId, DateTime startPublicationTime, DateTime endPublicationTime)
         {
             var articles = await this.clubRepository.QueryArticlesAsync(clubId, startPublicationTime, endPublicationTime);
 

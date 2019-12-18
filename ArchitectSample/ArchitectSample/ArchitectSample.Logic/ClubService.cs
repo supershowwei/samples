@@ -17,9 +17,9 @@ namespace ArchitectSample.Logic
             this.clubRepository = clubRepository;
         }
 
-        public async Task<ServiceResult<Club>> GetClub(int clubId)
+        public async Task<ServiceResult<Club>> GetClubAsync(int clubId)
         {
-            var club = await this.clubDataAccess.QueryOneAsnyc(c => c.Id == clubId);
+            var club = await this.clubDataAccess.QueryOneAsync(c => c.Id == clubId);
 
             return ServiceResult.Success(club);
         }

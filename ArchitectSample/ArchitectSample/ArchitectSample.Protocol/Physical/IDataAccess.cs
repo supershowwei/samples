@@ -7,9 +7,9 @@ namespace ArchitectSample.Protocol.Physical
 {
     public interface IDataAccess<T>
     {
-        Task<T> QueryOneAsnyc(Expression<Func<T, bool>> predicate);
+        Task<T> QueryOneAsync(Expression<Func<T, bool>> predicate);
 
-        Task<T> QueryOneAsnyc(Expression<Func<T, object>> selector, Expression<Func<T, bool>> predicate);
+        Task<T> QueryOneAsync(Expression<Func<T, object>> selector, Expression<Func<T, bool>> predicate);
 
         Task<List<T>> QueryAsync(Expression<Func<T, bool>> predicate);
 

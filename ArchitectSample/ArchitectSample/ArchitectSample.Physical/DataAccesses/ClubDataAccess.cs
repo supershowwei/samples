@@ -9,12 +9,12 @@ namespace ArchitectSample.Physical.DataAccesses
 {
     public class ClubDataAccess : IDataAccess<Club>
     {
-        public Task<Club> QueryOneAsnyc(Expression<Func<Club, bool>> predicate)
+        public Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Club> QueryOneAsnyc(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
+        public Task<Club> QueryOneAsync(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
         {
             throw new NotImplementedException();
         }
