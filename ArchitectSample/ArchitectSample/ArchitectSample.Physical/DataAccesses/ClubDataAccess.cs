@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace ArchitectSample.Physical.DataAccesses
 {
     public class ClubDataAccess : IDataAccess<Club>
     {
-        private static readonly string ConnectionString = "Data Source=";
+        private static readonly string ConnectionString = File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First();
 
         public Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
         {
