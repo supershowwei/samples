@@ -34,12 +34,22 @@ namespace ArchitectSample.Physical.DataAccesses
             throw new NotImplementedException();
         }
 
-        public Task InsertAsync(Expression<Func<ClubMember>> setters)
+        public Task InsertAsync(List<ClubMember> values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task BulkInsertAsync(List<ClubMember> values)
         {
             throw new NotImplementedException();
         }
 
         public Task UpdateAsync(Expression<Func<ClubMember>> setters, Expression<Func<ClubMember, bool>> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateAsync(IEnumerable<(Expression<Func<ClubMember>>, Expression<Func<ClubMember, bool>>)> statements)
         {
             throw new NotImplementedException();
         }

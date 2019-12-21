@@ -11,6 +11,8 @@ namespace ArchitectSample.Physical
             this.builder = new StringBuilder();
         }
 
+        private string Sql => this.builder.ToString();
+
         public static SqlBuilder operator +(SqlBuilder sqlBuilder, string sql)
         {
             sqlBuilder.Append(sql);

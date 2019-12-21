@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ArchitectSample.Protocol.Model.Data
 {
@@ -8,5 +10,17 @@ namespace ArchitectSample.Protocol.Model.Data
         public int Id { get; set; }
 
         public string Name { get; set; }
+
+        #region ClubMember
+
+        public DateTime Deadline { get; set; }
+
+        public string Status { get; set; }
+
+        #endregion
+
+        public List<Member> Members { get; set; }
+
+        public List<ClubArticle> Articles { get; set; }
     }
 }
