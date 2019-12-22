@@ -16,12 +16,27 @@ namespace ArchitectSample.Physical.DataAccesses
     {
         private static readonly string ConnectionString = File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First();
 
-        public Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
+        public async Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
         {
-            throw new NotImplementedException();
+            SqlBuilder sql = @"
+SELECT
+    c.ClubID AS Id
+   ,c.[Name]
+   ,c.IsHide
+   ,c.IsActive
+FROM Club c WITH (NOLOCK)
+WHERE ";
+            sql += predicate.ToSearchCondition("c", out var parameters);
+
+            using (var db = new SqlConnection(ConnectionString))
+            {
+                var result = await db.QuerySingleOrDefaultAsync<Club>(sql, parameters);
+
+                return result;
+            }
         }
 
-        public async Task<Club> QueryOneAsync(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
+        public async Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate, Expression<Func<Club, object>> selector)
         {
             SqlBuilder sql = @"
 SELECT ";
@@ -44,7 +59,7 @@ WHERE ";
             throw new NotImplementedException();
         }
 
-        public async Task<List<Club>> QueryAsync(Expression<Func<Club, object>> selector, Expression<Func<Club, bool>> predicate)
+        public async Task<List<Club>> QueryAsync(Expression<Func<Club, bool>> predicate, Expression<Func<Club, object>> selector)
         {
             SqlBuilder sql = @"
 SELECT ";
@@ -77,22 +92,34 @@ WHERE ";
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync(Expression<Func<Club>> setters, Expression<Func<Club, bool>> predicate)
+        public async Task UpdateAsync(Expression<Func<Club, bool>> predicate, Expression<Func<Club>> setter)
         {
-            throw new NotImplementedException();
+            SqlBuilder sql = @"
+UPDATE Club
+SET ";
+            sql += setter.ToSetStatements(out var parameters);
+            sql += @"
+WHERE ";
+            sql += predicate.ToSearchCondition(parameters);
+            sql += ";";
+
+            using (var db = new SqlConnection(ConnectionString))
+            {
+                await db.ExecuteAsync(sql, parameters);
+            }
         }
 
-        public async Task UpdateAsync(IEnumerable<ValueTuple<Expression<Func<Club>>, Expression<Func<Club, bool>>>> statements)
+        public async Task UpdateAsync(IEnumerable<(Expression<Func<Club, bool>>, Expression<Func<Club>>)> statements)
         {
             var sql = new SqlBuilder();
             var parameters = new Dictionary<string, object>();
 
-            foreach (var (setters, predicate) in statements)
+            foreach (var (predicate, setter) in statements)
             {
                 sql += @"
 UPDATE Club
 SET ";
-                sql += setters.ToSetStatements(parameters);
+                sql += setter.ToSetStatements(parameters);
                 sql += @"
 WHERE ";
                 sql += predicate.ToSearchCondition(parameters);

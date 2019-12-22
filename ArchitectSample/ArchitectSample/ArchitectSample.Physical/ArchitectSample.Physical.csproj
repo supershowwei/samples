@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Chef.Extensions.Dapper" Version="2.0.6" />
+    <PackageReference Include="Chef.Extensions.Dapper" Version="2.0.7" />
     <PackageReference Include="Dapper" Version="1.60.6" />
   </ItemGroup>
 

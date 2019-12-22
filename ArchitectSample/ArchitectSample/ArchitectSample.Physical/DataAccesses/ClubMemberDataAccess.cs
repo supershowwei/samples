@@ -14,7 +14,7 @@ namespace ArchitectSample.Physical.DataAccesses
             throw new NotImplementedException();
         }
 
-        public Task<ClubMember> QueryOneAsync(Expression<Func<ClubMember, object>> selector, Expression<Func<ClubMember, bool>> predicate)
+        public Task<ClubMember> QueryOneAsync(Expression<Func<ClubMember, bool>> predicate, Expression<Func<ClubMember, object>> selector)
         {
             throw new NotImplementedException();
         }
@@ -24,7 +24,9 @@ namespace ArchitectSample.Physical.DataAccesses
             throw new NotImplementedException();
         }
 
-        public Task<List<ClubMember>> QueryAsync(Expression<Func<ClubMember, object>> selector, Expression<Func<ClubMember, bool>> predicate)
+        public Task<List<ClubMember>> QueryAsync(
+            Expression<Func<ClubMember, bool>> predicate,
+            Expression<Func<ClubMember, object>> selector)
         {
             throw new NotImplementedException();
         }
@@ -44,12 +46,12 @@ namespace ArchitectSample.Physical.DataAccesses
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync(Expression<Func<ClubMember>> setters, Expression<Func<ClubMember, bool>> predicate)
+        public Task UpdateAsync(Expression<Func<ClubMember, bool>> predicate, Expression<Func<ClubMember>> setter)
         {
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync(IEnumerable<(Expression<Func<ClubMember>>, Expression<Func<ClubMember, bool>>)> statements)
+        public Task UpdateAsync(IEnumerable<(Expression<Func<ClubMember, bool>>, Expression<Func<ClubMember>>)> statements)
         {
             throw new NotImplementedException();
         }

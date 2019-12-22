@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
 using ArchitectSample.Physical.DataAccesses;
 using ArchitectSample.Protocol.Model.Data;
@@ -26,6 +25,48 @@ namespace ArchitectSample.Tests
         }
 
         [TestMethod]
+        public async Task Test_QueryOneAsync_with_Selector()
+        {
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            var club = await clubDataAccess.QueryOneAsync(x => x.Id == 25, x => new { x.Name });
+
+            Assert.AreEqual(0, club.Id);
+            Assert.AreEqual("軌道鞅之股期權常勝軍", club.Name);
+        }
+
+        [TestMethod]
+        public async Task Test_QueryAsync_with_Selector()
+        {
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            var clubs = await clubDataAccess.QueryAsync(x => new[] { 17, 25 }.Contains(x.Id), x => new { x.Name });
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual(0, clubs[0].Id);
+            Assert.AreEqual(0, clubs[1].Id);
+            Assert.AreEqual("玩股網功能測試", clubs[0].Name);
+            Assert.AreEqual("軌道鞅之股期權常勝軍", clubs[1].Name);
+        }
+
+        [TestMethod]
+        public async Task Test_UpdateAsync()
+        {
+            var suffix = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000).ToString();
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            var clubName = "永政交易工作室" + suffix;
+
+            await clubDataAccess.UpdateAsync(x => x.Id.Equals(15), () => new Club { Name = clubName });
+
+            var club = await clubDataAccess.QueryOneAsync(x => x.Id == 15);
+
+            Assert.AreEqual(15, club.Id);
+            Assert.AreEqual("永政交易工作室" + suffix, club.Name);
+        }
+
+        [TestMethod]
         public async Task Test_UpdateAsync_Multiply()
         {
             var suffix = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000).ToString();
@@ -39,9 +80,11 @@ namespace ArchitectSample.Tests
 
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
 
-            await clubDataAccess.UpdateAsync(clubs.Select(c => c.Set(() => new Club { Name = c.Name }).Where(x => x.Id == c.Id)));
+            var statements = clubs.Select(c => c.ToStatement(x => x.Id == c.Id, () => new Club { Name = c.Name }));
 
-            var actual = await clubDataAccess.QueryAsync(x => new { x.Id, x.Name }, x => new[] { 15, 16, 19 }.Contains(x.Id));
+            await clubDataAccess.UpdateAsync(statements);
+
+            var actual = await clubDataAccess.QueryAsync(x => new[] { 15, 16, 19 }.Contains(x.Id), x => new { x.Id, x.Name });
 
             Assert.AreEqual("永政交易工作室" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
             Assert.AreEqual("名諭爸的股票.權證.實戰夢想室" + suffix, actual.Single(x => x.Id.Equals(16)).Name);

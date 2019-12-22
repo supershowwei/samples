@@ -9,11 +9,11 @@ namespace ArchitectSample.Protocol.Physical
     {
         Task<T> QueryOneAsync(Expression<Func<T, bool>> predicate);
 
-        Task<T> QueryOneAsync(Expression<Func<T, object>> selector, Expression<Func<T, bool>> predicate);
+        Task<T> QueryOneAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> selector);
 
         Task<List<T>> QueryAsync(Expression<Func<T, bool>> predicate);
 
-        Task<List<T>> QueryAsync(Expression<Func<T, object>> selector, Expression<Func<T, bool>> predicate);
+        Task<List<T>> QueryAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> selector);
 
         Task InsertAsync(T value);
 
@@ -21,9 +21,9 @@ namespace ArchitectSample.Protocol.Physical
 
         Task BulkInsertAsync(List<T> values);
 
-        Task UpdateAsync(Expression<Func<T>> setters, Expression<Func<T, bool>> predicate);
+        Task UpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter);
 
-        Task UpdateAsync(IEnumerable<(Expression<Func<T>>, Expression<Func<T, bool>>)> statements);
+        Task UpdateAsync(IEnumerable<(Expression<Func<T, bool>>, Expression<Func<T>>)> statements);
 
         Task DeleteAsync(Expression<Func<T, bool>> predicate);
     }
