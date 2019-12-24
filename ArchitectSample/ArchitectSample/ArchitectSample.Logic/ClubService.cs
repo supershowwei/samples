@@ -17,6 +17,16 @@ namespace ArchitectSample.Logic
             this.clubRepository = clubRepository;
         }
 
+        public ClubService(IDataAccess<Club> clubDataAccess)
+        {
+            this.clubDataAccess = clubDataAccess;
+        }
+
+        public ClubService(IClubRepository clubRepository)
+        {
+            this.clubRepository = clubRepository;
+        }
+
         // Wrong code! Don't use it.
         public async Task<ServiceResult<Club>> GetClub(int clubId)
         {

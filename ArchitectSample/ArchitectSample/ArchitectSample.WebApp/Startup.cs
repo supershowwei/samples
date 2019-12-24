@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using ArchitectSample.Logic;
+using ArchitectSample.Protocol.Logic;
+using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
 using ArchitectSample.WebApp.Extensions;
 using Autofac;
@@ -63,6 +65,9 @@ namespace ArchitectSample.WebApp
         public void ConfigureContainer(ContainerBuilder builder)
         {
             builder.RegisterAssemblyTypes(Assembly.Load("ArchitectSample.Physical"), Assembly.Load("ArchitectSample.Logic")).AsImplementedInterfaces();
+
+            builder.RegisterType<ClubService>().UsingConstructor(typeof(IDataAccess<Club>)).Named<IClubService>("abc");
+            builder.RegisterType<ClubService>().UsingConstructor(typeof(IClubRepository)).Named<IClubService>("def");
         }
     }
 }
