@@ -78,14 +78,19 @@ namespace ArchitectSample.Protocol.Model.Results
 
         public TValue Value { get; }
 
+        public static ServiceResult<TValue> Failure(string message)
+        {
+            return new ServiceResult<TValue>(false, true, int.MinValue, message, default(TValue));
+        }
+
         public static implicit operator ServiceResult<TValue>(ServiceResult result)
         {
             return new ServiceResult<TValue>(result.IsSuccess, result.IsFailure, result.Code, result.Message, default(TValue));
         }
 
-        public static ServiceResult<TValue> Failure(string message)
+        public static implicit operator TValue(ServiceResult<TValue> result)
         {
-            return new ServiceResult<TValue>(false, true, int.MinValue, message, default(TValue));
+            return result.Value;
         }
 
         public void Deconstruct(out IResult result, out TValue value)
@@ -122,6 +127,11 @@ namespace ArchitectSample.Protocol.Model.Results
 
         public TValue2 Value2 { get; }
 
+        public static ServiceResult<TValue1, TValue2> Failure(string message)
+        {
+            return new ServiceResult<TValue1, TValue2>(false, true, int.MinValue, message, default(TValue1), default(TValue2));
+        }
+
         public static implicit operator ServiceResult<TValue1, TValue2>(ServiceResult result)
         {
             return new ServiceResult<TValue1, TValue2>(
@@ -133,9 +143,10 @@ namespace ArchitectSample.Protocol.Model.Results
                 default(TValue2));
         }
 
-        public static ServiceResult<TValue1, TValue2> Failure(string message)
+        public void Deconstruct(out TValue1 value1, out TValue2 value2)
         {
-            return new ServiceResult<TValue1, TValue2>(false, true, int.MinValue, message, default(TValue1), default(TValue2));
+            value1 = this.Value1;
+            value2 = this.Value2;
         }
 
         public void Deconstruct(out IResult result, out TValue1 value1, out TValue2 value2)
@@ -176,6 +187,18 @@ namespace ArchitectSample.Protocol.Model.Results
 
         public TValue3 Value3 { get; }
 
+        public static ServiceResult<TValue1, TValue2, TValue3> Failure(string message)
+        {
+            return new ServiceResult<TValue1, TValue2, TValue3>(
+                false,
+                true,
+                int.MinValue,
+                message,
+                default(TValue1),
+                default(TValue2),
+                default(TValue3));
+        }
+
         public static implicit operator ServiceResult<TValue1, TValue2, TValue3>(ServiceResult result)
         {
             return new ServiceResult<TValue1, TValue2, TValue3>(
@@ -188,16 +211,11 @@ namespace ArchitectSample.Protocol.Model.Results
                 default(TValue3));
         }
 
-        public static ServiceResult<TValue1, TValue2, TValue3> Failure(string message)
+        public void Deconstruct(out TValue1 value1, out TValue2 value2, out TValue3 value3)
         {
-            return new ServiceResult<TValue1, TValue2, TValue3>(
-                false,
-                true,
-                int.MinValue,
-                message,
-                default(TValue1),
-                default(TValue2),
-                default(TValue3));
+            value1 = this.Value1;
+            value2 = this.Value2;
+            value3 = this.Value3;
         }
 
         public void Deconstruct(out IResult result, out TValue1 value1, out TValue2 value2, out TValue3 value3)

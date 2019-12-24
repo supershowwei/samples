@@ -7,6 +7,10 @@ namespace ArchitectSample.Protocol.Physical
 {
     public interface IDataAccess<T>
     {
+        Task<List<T>> QueryAllAsync();
+
+        Task<List<T>> QueryAllAsync(Expression<Func<T, object>> selector);
+
         Task<T> QueryOneAsync(Expression<Func<T, bool>> predicate);
 
         Task<T> QueryOneAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, object>> selector);
@@ -24,6 +28,10 @@ namespace ArchitectSample.Protocol.Physical
         Task UpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter);
 
         Task UpdateAsync(IEnumerable<(Expression<Func<T, bool>>, Expression<Func<T>>)> statements);
+
+        Task UpsertAsync(T value);
+
+        Task UpsertAsync(List<T> values);
 
         Task DeleteAsync(Expression<Func<T, bool>> predicate);
     }

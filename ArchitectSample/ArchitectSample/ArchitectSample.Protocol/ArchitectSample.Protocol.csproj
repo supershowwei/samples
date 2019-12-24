@@ -8,4 +8,10 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Logic\IClubService.*.cs">
+      <DependentUpon>Logic\IClubService.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

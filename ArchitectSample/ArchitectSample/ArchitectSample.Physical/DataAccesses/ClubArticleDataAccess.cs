@@ -9,6 +9,16 @@ namespace ArchitectSample.Physical.DataAccesses
 {
     public class ClubArticleDataAccess : IDataAccess<ClubArticle>
     {
+        public Task<List<ClubArticle>> QueryAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<ClubArticle>> QueryAllAsync(Expression<Func<ClubArticle, object>> selector)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<ClubArticle> QueryOneAsync(Expression<Func<ClubArticle, bool>> predicate)
         {
             throw new NotImplementedException();
@@ -54,6 +64,16 @@ namespace ArchitectSample.Physical.DataAccesses
         }
 
         public Task UpdateAsync(IEnumerable<(Expression<Func<ClubArticle, bool>>, Expression<Func<ClubArticle>>)> statements)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpsertAsync(ClubArticle value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpsertAsync(List<ClubArticle> values)
         {
             throw new NotImplementedException();
         }

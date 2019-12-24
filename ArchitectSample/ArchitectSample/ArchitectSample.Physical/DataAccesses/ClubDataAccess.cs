@@ -16,6 +16,16 @@ namespace ArchitectSample.Physical.DataAccesses
     {
         private static readonly string ConnectionString = File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First();
 
+        public Task<List<Club>> QueryAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<Club>> QueryAllAsync(Expression<Func<Club, object>> selector)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
         {
             SqlBuilder sql = @"
@@ -130,6 +140,16 @@ WHERE ";
             {
                 await db.ExecuteAsync(sql, parameters);
             }
+        }
+
+        public Task UpsertAsync(Club value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpsertAsync(List<Club> values)
+        {
+            throw new NotImplementedException();
         }
 
         public Task DeleteAsync(Expression<Func<Club, bool>> predicate)
