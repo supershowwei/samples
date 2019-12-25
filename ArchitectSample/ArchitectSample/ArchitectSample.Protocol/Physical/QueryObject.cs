@@ -21,10 +21,12 @@ namespace ArchitectSample.Protocol.Physical
 
         public Expression<Func<T, bool>> Predicate { get; set; }
 
+        public List<(Expression<Func<T, object>>, Sortord)> OrderExpressions { get; set; }
+
         public Expression<Func<T, object>> Selector { get; set; }
 
         public Expression<Func<T>> Setter { get; set; }
 
-        public List<(Expression<Func<T, object>>, Sortord)> OrderExpressions { get; set; }
+        public int? Top { get; set; }
     }
 }

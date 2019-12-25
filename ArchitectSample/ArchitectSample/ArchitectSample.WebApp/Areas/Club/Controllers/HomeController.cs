@@ -18,7 +18,7 @@ namespace ArchitectSample.WebApp.Areas.Club.Controllers
         [HttpGet("{clubId:int}")]
         public async Task<IActionResult> Index(int clubId)
         {
-            var club = await this.clubDataAccess.QueryOneAsync(x => x.Id.Equals(clubId), x => new { x.Id, x.Name });
+            var club = await this.clubDataAccess.QueryOneAsync(x => x.Id.Equals(clubId), selector: x => new { x.Id, x.Name });
 
             this.ViewBag.ClubId = club.Id;
 

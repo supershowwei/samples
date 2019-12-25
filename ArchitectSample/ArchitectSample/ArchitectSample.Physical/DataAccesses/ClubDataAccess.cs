@@ -18,19 +18,25 @@ namespace ArchitectSample.Physical.DataAccesses
         private static readonly string ConnectionString = File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First();
 
         public Task<List<Club>> QueryAllAsync(
+            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null,
             Expression<Func<Club, object>> selector = null,
-            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null)
+            int? top = null)
         {
             throw new NotImplementedException();
         }
 
         public async Task<Club> QueryOneAsync(
             Expression<Func<Club, bool>> predicate,
+            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null,
             Expression<Func<Club, object>> selector = null,
-            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null)
+            int? top = null)
         {
             SqlBuilder sql = @"
 SELECT ";
+            if (top.HasValue)
+            {
+                sql += $"TOP ({top})";
+            }
 
             if (selector == null)
             {
@@ -75,11 +81,16 @@ ORDER BY ";
 
         public async Task<List<Club>> QueryAsync(
             Expression<Func<Club, bool>> predicate,
+            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null,
             Expression<Func<Club, object>> selector = null,
-            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null)
+            int? top = null)
         {
             SqlBuilder sql = @"
 SELECT ";
+            if (top.HasValue)
+            {
+                sql += $"TOP ({top})";
+            }
 
             if (selector == null)
             {

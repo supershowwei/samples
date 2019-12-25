@@ -57,14 +57,21 @@ namespace ArchitectSample.Shared.Extensions
             return me;
         }
 
+        public static QueryObject<T> Top<T>(this QueryObject<T> me, int n)
+        {
+            me.Top = n;
+
+            return me;
+        }
+
         public static Task<T> QueryOneAsync<T>(this QueryObject<T> me)
         {
-            return me.DataAccess.QueryOneAsync(me.Predicate, me.Selector, me.OrderExpressions);
+            return me.DataAccess.QueryOneAsync(me.Predicate, me.OrderExpressions, me.Selector, me.Top);
         }
 
         public static Task<List<T>> QueryAsync<T>(this QueryObject<T> me)
         {
-            return me.DataAccess.QueryAsync(me.Predicate, me.Selector, me.OrderExpressions);
+            return me.DataAccess.QueryAsync(me.Predicate, me.OrderExpressions, me.Selector, me.Top);
         }
 
         public static Task UpdateAsync<T>(this QueryObject<T> me)

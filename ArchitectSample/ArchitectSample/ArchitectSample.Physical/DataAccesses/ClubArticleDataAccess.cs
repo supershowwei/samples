@@ -10,24 +10,27 @@ namespace ArchitectSample.Physical.DataAccesses
     public class ClubArticleDataAccess : IDataAccess<ClubArticle>
     {
         public Task<List<ClubArticle>> QueryAllAsync(
+            IEnumerable<(Expression<Func<ClubArticle, object>>, Sortord)> orderings = null,
             Expression<Func<ClubArticle, object>> selector = null,
-            IEnumerable<(Expression<Func<ClubArticle, object>>, Sortord)> orderings = null)
+            int? top = null)
         {
             throw new NotImplementedException();
         }
 
         public Task<ClubArticle> QueryOneAsync(
             Expression<Func<ClubArticle, bool>> predicate,
+            IEnumerable<(Expression<Func<ClubArticle, object>>, Sortord)> orderings = null,
             Expression<Func<ClubArticle, object>> selector = null,
-            IEnumerable<(Expression<Func<ClubArticle, object>>, Sortord)> orderings = null)
+            int? top = null)
         {
             throw new NotImplementedException();
         }
 
         public Task<List<ClubArticle>> QueryAsync(
             Expression<Func<ClubArticle, bool>> predicate,
+            IEnumerable<(Expression<Func<ClubArticle, object>>, Sortord)> orderings = null,
             Expression<Func<ClubArticle, object>> selector = null,
-            IEnumerable<(Expression<Func<ClubArticle, object>>, Sortord)> orderings = null)
+            int? top = null)
         {
             throw new NotImplementedException();
         }

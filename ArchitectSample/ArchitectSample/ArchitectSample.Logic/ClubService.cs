@@ -30,7 +30,7 @@ namespace ArchitectSample.Logic
         // Wrong code! Don't use it.
         public async Task<ServiceResult<Club>> GetClub(int clubId)
         {
-            var club = await this.clubDataAccess.QueryOneAsync(x => x.Id.Equals(clubId), x => new { x.Id, x.Name });
+            var club = await this.clubDataAccess.QueryOneAsync(x => x.Id.Equals(clubId), selector: x => new { x.Id, x.Name });
 
             return ServiceResult.Success(club);
         }

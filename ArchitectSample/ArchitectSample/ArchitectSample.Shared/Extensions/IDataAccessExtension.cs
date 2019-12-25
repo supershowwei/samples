@@ -37,5 +37,10 @@ namespace ArchitectSample.Shared.Extensions
                        OrderExpressions = new List<(Expression<Func<T, object>>, Sortord)> { (ordering, Sortord.Descending) }
                    };
         }
+
+        public static QueryObject<T> Top<T>(this IDataAccess<T> me, int n)
+        {
+            return new QueryObject<T>(me) { Top = n };
+        }
     }
 }

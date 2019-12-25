@@ -8,18 +8,21 @@ namespace ArchitectSample.Protocol.Physical
     public interface IDataAccess<T>
     {
         Task<List<T>> QueryAllAsync(
+            IEnumerable<(Expression<Func<T, object>>, Sortord)> orderings = null,
             Expression<Func<T, object>> selector = null,
-            IEnumerable<(Expression<Func<T, object>>, Sortord)> orderings = null);
+            int? top = null);
 
         Task<T> QueryOneAsync(
             Expression<Func<T, bool>> predicate,
+            IEnumerable<(Expression<Func<T, object>>, Sortord)> orderings = null,
             Expression<Func<T, object>> selector = null,
-            IEnumerable<(Expression<Func<T, object>>, Sortord)> orderings = null);
+            int? top = null);
 
         Task<List<T>> QueryAsync(
             Expression<Func<T, bool>> predicate,
+            IEnumerable<(Expression<Func<T, object>>, Sortord)> orderings = null,
             Expression<Func<T, object>> selector = null,
-            IEnumerable<(Expression<Func<T, object>>, Sortord)> orderings = null);
+            int? top = null);
 
         Task InsertAsync(T value);
 
