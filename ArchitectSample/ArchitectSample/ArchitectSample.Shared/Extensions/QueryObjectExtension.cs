@@ -78,13 +78,5 @@ namespace ArchitectSample.Shared.Extensions
         {
             return me.DataAccess.UpdateAsync(me.Predicate, me.Setter);
         }
-
-        public static (Expression<Func<T, bool>>, Expression<Func<T>>) ToStatement<T>(
-            this T me,
-            Expression<Func<T, bool>> predicate,
-            Expression<Func<T>> setter)
-        {
-            return (predicate, setter);
-        }
     }
 }

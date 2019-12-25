@@ -172,30 +172,5 @@ namespace ArchitectSample.Tests
             Assert.AreEqual("名諭爸的股票.權證.實戰夢想室" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
             Assert.AreEqual("何毅的實戰控盤轉折術" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
         }
-
-        [TestMethod]
-        public async Task Test_UpdateAsync_Multiply_use_ToStatement()
-        {
-            var suffix = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000).ToString();
-
-            var clubs = new List<Club>
-                        {
-                            new Club { Id = 15, Name = "永政交易工作室" + suffix },
-                            new Club { Id = 16, Name = "名諭爸的股票.權證.實戰夢想室" + suffix },
-                            new Club { Id = 19, Name = "何毅的實戰控盤轉折術" + suffix }
-                        };
-
-            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
-
-            var statements = clubs.Select(c => c.ToStatement(x => x.Id == c.Id, () => new Club { Name = c.Name }));
-
-            await clubDataAccess.UpdateAsync(statements);
-
-            var actual = await clubDataAccess.QueryAsync(x => new[] { 15, 16, 19 }.Contains(x.Id), selector: x => new { x.Id, x.Name });
-
-            Assert.AreEqual("永政交易工作室" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
-            Assert.AreEqual("名諭爸的股票.權證.實戰夢想室" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
-            Assert.AreEqual("何毅的實戰控盤轉折術" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
-        }
     }
 }
