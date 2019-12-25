@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
 using Chef.Extensions.Dapper;
+using Chef.Extensions.IEnumerable;
 using Dapper;
 
 namespace ArchitectSample.Physical.DataAccesses
@@ -16,27 +17,53 @@ namespace ArchitectSample.Physical.DataAccesses
     {
         private static readonly string ConnectionString = File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First();
 
-        public Task<List<Club>> QueryAllAsync()
+        public Task<List<Club>> QueryAllAsync(
+            Expression<Func<Club, object>> selector = null,
+            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<Club>> QueryAllAsync(Expression<Func<Club, object>> selector)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate)
+        public async Task<Club> QueryOneAsync(
+            Expression<Func<Club, bool>> predicate,
+            Expression<Func<Club, object>> selector = null,
+            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null)
         {
             SqlBuilder sql = @"
-SELECT
+SELECT ";
+
+            if (selector == null)
+            {
+                sql += @"
     c.ClubID AS Id
    ,c.[Name]
    ,c.IsHide
-   ,c.IsActive
+   ,c.IsActive";
+            }
+            else
+            {
+                sql += selector.ToSelectList("c");
+            }
+
+            sql += @"
 FROM Club c WITH (NOLOCK)
 WHERE ";
             sql += predicate.ToSearchCondition("c", out var parameters);
+
+            if (!orderings.IsNullOrEmpty())
+            {
+                sql += @"
+ORDER BY ";
+                sql += string.Join(
+                    ", ",
+                    orderings.Select(
+                        o =>
+                            {
+                                var (expr, sortord) = o;
+
+                                return sortord == Sortord.Descending ? expr.ToOrderDescending("c") : expr.ToOrderAscending("c");
+                            }));
+            }
 
             using (var db = new SqlConnection(ConnectionString))
             {
@@ -46,38 +73,46 @@ WHERE ";
             }
         }
 
-        public async Task<Club> QueryOneAsync(Expression<Func<Club, bool>> predicate, Expression<Func<Club, object>> selector)
+        public async Task<List<Club>> QueryAsync(
+            Expression<Func<Club, bool>> predicate,
+            Expression<Func<Club, object>> selector = null,
+            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null)
         {
             SqlBuilder sql = @"
 SELECT ";
-            sql += selector.ToSelectList("c");
-            sql += @"
-FROM Club c WITH (NOLOCK)
-WHERE ";
-            sql += predicate.ToSearchCondition("c", out var parameters);
 
-            using (var db = new SqlConnection(ConnectionString))
+            if (selector == null)
             {
-                var result = await db.QuerySingleOrDefaultAsync<Club>(sql, parameters);
-
-                return result;
+                sql += @"
+    c.ClubID AS Id
+   ,c.[Name]
+   ,c.IsHide
+   ,c.IsActive";
             }
-        }
+            else
+            {
+                sql += selector.ToSelectList("c");
+            }
 
-        public Task<List<Club>> QueryAsync(Expression<Func<Club, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<List<Club>> QueryAsync(Expression<Func<Club, bool>> predicate, Expression<Func<Club, object>> selector)
-        {
-            SqlBuilder sql = @"
-SELECT ";
-            sql += selector.ToSelectList("c");
             sql += @"
 FROM Club c WITH (NOLOCK)
 WHERE ";
             sql += predicate.ToSearchCondition("c", out var parameters);
+
+            if (!orderings.IsNullOrEmpty())
+            {
+                sql += @"
+ORDER BY ";
+                sql += string.Join(
+                    ", ",
+                    orderings.Select(
+                        o =>
+                            {
+                                var (expr, sortord) = o;
+
+                                return sortord == Sortord.Descending ? expr.ToOrderDescending("c") : expr.ToOrderAscending("c");
+                            }));
+            }
 
             using (var db = new SqlConnection(ConnectionString))
             {

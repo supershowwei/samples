@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Chef.Extensions.Agility" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ArchitectSample.Protocol\ArchitectSample.Protocol.csproj" />
   </ItemGroup>
 
