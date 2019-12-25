@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using ArchitectSample.Physical.Extensions;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
 using Chef.Extensions.Dapper;
@@ -16,6 +17,8 @@ namespace ArchitectSample.Physical.DataAccesses
     public class ClubDataAccess : IDataAccess<Club>
     {
         private static readonly string ConnectionString = File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First();
+
+        private static readonly Expression<Func<Club, object>> DefaultSelector = x => new { x.Id, x.Name };
 
         public Task<List<Club>> QueryAllAsync(
             IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null,
@@ -33,43 +36,13 @@ namespace ArchitectSample.Physical.DataAccesses
         {
             SqlBuilder sql = @"
 SELECT ";
-            if (top.HasValue)
-            {
-                sql += $"TOP ({top})";
-            }
-
-            if (selector == null)
-            {
-                sql += @"
-    c.ClubID AS Id
-   ,c.[Name]
-   ,c.IsHide
-   ,c.IsActive";
-            }
-            else
-            {
-                sql += selector.ToSelectList("c");
-            }
-
+            sql += top.HasValue ? $"TOP ({top})" : string.Empty;
+            sql += (selector ?? DefaultSelector).ToSelectList("c");
             sql += @"
 FROM Club c WITH (NOLOCK)
 WHERE ";
             sql += predicate.ToSearchCondition("c", out var parameters);
-
-            if (!orderings.IsNullOrEmpty())
-            {
-                sql += @"
-ORDER BY ";
-                sql += string.Join(
-                    ", ",
-                    orderings.Select(
-                        o =>
-                            {
-                                var (expr, sortord) = o;
-
-                                return sortord == Sortord.Descending ? expr.ToOrderDescending("c") : expr.ToOrderAscending("c");
-                            }));
-            }
+            sql += orderings.ToOrderExpression("c");
 
             using (var db = new SqlConnection(ConnectionString))
             {
@@ -87,43 +60,13 @@ ORDER BY ";
         {
             SqlBuilder sql = @"
 SELECT ";
-            if (top.HasValue)
-            {
-                sql += $"TOP ({top})";
-            }
-
-            if (selector == null)
-            {
-                sql += @"
-    c.ClubID AS Id
-   ,c.[Name]
-   ,c.IsHide
-   ,c.IsActive";
-            }
-            else
-            {
-                sql += selector.ToSelectList("c");
-            }
-
+            sql += top.HasValue ? $"TOP ({top})" : string.Empty;
+            sql += (selector ?? DefaultSelector).ToSelectList("c");
             sql += @"
 FROM Club c WITH (NOLOCK)
 WHERE ";
             sql += predicate.ToSearchCondition("c", out var parameters);
-
-            if (!orderings.IsNullOrEmpty())
-            {
-                sql += @"
-ORDER BY ";
-                sql += string.Join(
-                    ", ",
-                    orderings.Select(
-                        o =>
-                            {
-                                var (expr, sortord) = o;
-
-                                return sortord == Sortord.Descending ? expr.ToOrderDescending("c") : expr.ToOrderAscending("c");
-                            }));
-            }
+            sql += orderings.ToOrderExpression("c");
 
             using (var db = new SqlConnection(ConnectionString))
             {
