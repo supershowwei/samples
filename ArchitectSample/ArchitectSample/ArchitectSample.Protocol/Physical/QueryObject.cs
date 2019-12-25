@@ -4,12 +4,6 @@ using System.Linq.Expressions;
 
 namespace ArchitectSample.Protocol.Physical
 {
-    public enum Sortord
-    {
-        Ascending,
-        Descending
-    }
-
     public class QueryObject<T>
     {
         public QueryObject(IDataAccess<T> dataAccess)
