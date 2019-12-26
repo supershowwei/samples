@@ -108,26 +108,21 @@ WHERE ";
             }
         }
 
-        public async Task UpdateAsync(IEnumerable<(Expression<Func<Club, bool>>, Expression<Func<Club>>)> statements)
+        public async Task UpdateAsync(Expression<Func<Club, bool>> predicate, Expression<Func<Club>> setter, IEnumerable<Club> values)
         {
             var sql = new SqlBuilder();
-            var parameters = new Dictionary<string, object>();
 
-            foreach (var (predicate, setter) in statements)
-            {
-                sql += @"
+            sql += @"
 UPDATE Club
 SET ";
-                sql += setter.ToSetStatements(parameters);
-                sql += @"
+            sql += setter.ToSetStatements();
+            sql += @"
 WHERE ";
-                sql += predicate.ToSearchCondition(parameters);
-                sql += ";";
-            }
+            sql += predicate.ToSearchCondition();
 
             using (var db = new SqlConnection(ConnectionString))
             {
-                await db.ExecuteAsync(sql, parameters);
+                await db.ExecuteAsync(sql, values);
             }
         }
 

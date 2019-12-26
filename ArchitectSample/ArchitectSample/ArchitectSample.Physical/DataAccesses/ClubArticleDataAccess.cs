@@ -55,7 +55,7 @@ namespace ArchitectSample.Physical.DataAccesses
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync(IEnumerable<(Expression<Func<ClubArticle, bool>>, Expression<Func<ClubArticle>>)> statements)
+        public Task UpdateAsync(Expression<Func<ClubArticle, bool>> predicate, Expression<Func<ClubArticle>> setter, IEnumerable<ClubArticle> values)
         {
             throw new NotImplementedException();
         }

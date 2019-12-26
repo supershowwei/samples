@@ -1,47 +1,44 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using ArchitectSample.Protocol.Logic;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using ArchitectSample.WebApp.Models;
 using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using Autofac.Features.AttributeFilters;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace ArchitectSample.WebApp.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> logger;
-        private readonly AutofacServiceProvider serviceProvider;
+        private readonly ILifetimeScope lifetimeScope;
+        private readonly IClubService clubService;
 
-        public HomeController(ILogger<HomeController> logger, IServiceProvider serviceProvider)
+        public HomeController(ILogger<HomeController> logger, ILifetimeScope lifetimeScope)
         {
             this.logger = logger;
-            this.serviceProvider = serviceProvider as AutofacServiceProvider;
+            this.lifetimeScope = lifetimeScope;
+
+            this.clubService = lifetimeScope.ResolveNamed<IClubService>("abc");
         }
 
         public IActionResult Index()
         {
-            var clubService = this.serviceProvider.LifetimeScope.ResolveNamed<IClubService>("abc");
-
-            clubService = this.serviceProvider.LifetimeScope.Resolve<IClubService>();
-
-            return View();
+            return this.View();
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Privacy()
         {
-            return View();
+            var clubArticles = await this.clubService.ListArticlesAsync(1, DateTime.Now, DateTime.Now);
+
+            return this.View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return this.View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? this.HttpContext.TraceIdentifier });
         }
     }
 }

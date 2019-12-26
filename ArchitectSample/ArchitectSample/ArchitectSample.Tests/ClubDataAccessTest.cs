@@ -155,16 +155,7 @@ namespace ArchitectSample.Tests
 
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
 
-            var statements = clubs.Select(
-                c =>
-                    {
-                        var predicate = (Expression<Func<Club, bool>>)(x => x.Id == c.Id);
-                        var setter = (Expression<Func<Club>>)(() => new Club { Name = c.Name });
-
-                        return (predicate, setter);
-                    });
-
-            await clubDataAccess.UpdateAsync(statements);
+            await clubDataAccess.UpdateAsync(x => x.Id == default, () => new Club { Name = default }, clubs);
 
             var actual = await clubDataAccess.QueryAsync(x => new[] { 15, 16, 19 }.Contains(x.Id), selector: x => new { x.Id, x.Name });
 

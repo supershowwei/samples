@@ -32,7 +32,7 @@ namespace ArchitectSample.Protocol.Physical
 
         Task UpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter);
 
-        Task UpdateAsync(IEnumerable<(Expression<Func<T, bool>>, Expression<Func<T>>)> statements);
+        Task UpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values);
 
         Task UpsertAsync(T value);
 

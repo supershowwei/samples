@@ -6,7 +6,9 @@ namespace ArchitectSample.WebApp.Extensions
 {
     public static class ServiceCollectionExtension
     {
-        public static void RegisterAllTypes<T>(this IServiceCollection services, Assembly[] assemblies,
+        public static void RegisterAllTypes<T>(
+            this IServiceCollection services,
+            Assembly[] assemblies,
             ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
             var typesFromAssemblies = assemblies.SelectMany(a => a.DefinedTypes.Where(x => x.GetInterfaces().Contains(typeof(T))));

@@ -1,5 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using ArchitectSample.Protocol.Logic;
 using ArchitectSample.Protocol.Physical;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ArchitectSample.WebApp.Areas.Club.Controllers
