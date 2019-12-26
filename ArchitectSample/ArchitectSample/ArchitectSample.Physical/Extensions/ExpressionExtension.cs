@@ -17,20 +17,15 @@ namespace ArchitectSample.Physical.Extensions
 
         public static string ToOrderExpression<T>(this IEnumerable<(Expression<Func<T, object>>, Sortord)> me, string alias)
         {
-            if (me.IsNullOrEmpty()) return string.Empty;
+            return string.Join(
+                ", ",
+                me.Select(
+                    o =>
+                        {
+                            var (expr, sortord) = o;
 
-            return string.Concat(
-                @"
-ORDER BY ",
-                string.Join(
-                    ", ",
-                    me.Select(
-                        o =>
-                            {
-                                var (expr, sortord) = o;
-
-                                return sortord == Sortord.Descending ? expr.ToOrderDescending(alias) : expr.ToOrderAscending(alias);
-                            })));
+                            return sortord == Sortord.Descending ? expr.ToOrderDescending(alias) : expr.ToOrderAscending(alias);
+                        }));
         }
     }
 }

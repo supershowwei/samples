@@ -11,6 +11,8 @@ namespace ArchitectSample.Protocol.Model.Data
 
         public string Name { get; set; }
 
+        public bool IsActive { get; set; }
+
         #region ClubMember
 
         public DateTime Deadline { get; set; }

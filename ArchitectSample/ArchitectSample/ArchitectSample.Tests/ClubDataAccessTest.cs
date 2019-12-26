@@ -108,6 +108,22 @@ namespace ArchitectSample.Tests
         }
 
         [TestMethod]
+        public async Task Test_QueryAllAsync_with_Selector_use_QueryObject_and_OrderByDescending_and_ThenBy_Top()
+        {
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            var clubs = await clubDataAccess.OrderByDescending(x => x.IsActive)
+                            .ThenBy(x => x.Id)
+                            .Select(x => new { x.Id, x.Name })
+                            .Top(1)
+                            .QueryAsync();
+
+            Assert.AreEqual(1, clubs.Count);
+            Assert.AreEqual(9, clubs[0].Id);
+            Assert.AreEqual("µu½uöt¬£­x¹Î", clubs[0].Name);
+        }
+
+        [TestMethod]
         public async Task Test_UpdateAsync()
         {
             var suffix = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000).ToString();

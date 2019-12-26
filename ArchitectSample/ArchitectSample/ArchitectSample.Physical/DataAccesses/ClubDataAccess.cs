@@ -20,29 +20,34 @@ namespace ArchitectSample.Physical.DataAccesses
 
         private static readonly Expression<Func<Club, object>> DefaultSelector = x => new { x.Id, x.Name };
 
-        public Task<List<Club>> QueryAllAsync(
-            IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null,
-            Expression<Func<Club, object>> selector = null,
-            int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<Club> QueryOneAsync(
             Expression<Func<Club, bool>> predicate,
             IEnumerable<(Expression<Func<Club, object>>, Sortord)> orderings = null,
             Expression<Func<Club, object>> selector = null,
             int? top = null)
         {
+            IDictionary<string, object> parameters = new Dictionary<string, object>();
+
             SqlBuilder sql = @"
 SELECT ";
             sql += top.HasValue ? $"TOP ({top})" : string.Empty;
             sql += (selector ?? DefaultSelector).ToSelectList("c");
             sql += @"
-FROM Club c WITH (NOLOCK)
+FROM Club c WITH (NOLOCK)";
+
+            if (predicate != null)
+            {
+                sql += @"
 WHERE ";
-            sql += predicate.ToSearchCondition("c", out var parameters);
-            sql += orderings.ToOrderExpression("c");
+                sql += predicate.ToSearchCondition("c", out parameters);
+            }
+
+            if (orderings != null)
+            {
+                sql += @"
+ORDER BY ";
+                sql += orderings.ToOrderExpression("c");
+            }
 
             using (var db = new SqlConnection(ConnectionString))
             {
@@ -58,15 +63,28 @@ WHERE ";
             Expression<Func<Club, object>> selector = null,
             int? top = null)
         {
+            IDictionary<string, object> parameters = new Dictionary<string, object>();
+            
             SqlBuilder sql = @"
 SELECT ";
             sql += top.HasValue ? $"TOP ({top})" : string.Empty;
             sql += (selector ?? DefaultSelector).ToSelectList("c");
             sql += @"
-FROM Club c WITH (NOLOCK)
+FROM Club c WITH (NOLOCK)";
+
+            if (predicate != null)
+            {
+                sql += @"
 WHERE ";
-            sql += predicate.ToSearchCondition("c", out var parameters);
-            sql += orderings.ToOrderExpression("c");
+                sql += predicate.ToSearchCondition("c", out parameters);
+            }
+
+            if (orderings != null)
+            {
+                sql += @"
+ORDER BY ";
+                sql += orderings.ToOrderExpression("c");
+            }
 
             using (var db = new SqlConnection(ConnectionString))
             {
