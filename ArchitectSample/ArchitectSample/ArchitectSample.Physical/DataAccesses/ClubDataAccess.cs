@@ -26,28 +26,14 @@ namespace ArchitectSample.Physical.DataAccesses
             Expression<Func<Club, object>> selector = null,
             int? top = null)
         {
-            IDictionary<string, object> parameters = new Dictionary<string, object>();
-
             SqlBuilder sql = @"
 SELECT ";
             sql += top.HasValue ? $"TOP ({top})" : string.Empty;
             sql += (selector ?? DefaultSelector).ToSelectList("c");
             sql += @"
 FROM Club c WITH (NOLOCK)";
-
-            if (predicate != null)
-            {
-                sql += @"
-WHERE ";
-                sql += predicate.ToSearchCondition("c", out parameters);
-            }
-
-            if (orderings != null)
-            {
-                sql += @"
-ORDER BY ";
-                sql += orderings.ToOrderExpression("c");
-            }
+            sql += predicate.ToWhereStatement("c", out var parameters);
+            sql += orderings.ToOrderByStatement("c");
 
             using (var db = new SqlConnection(ConnectionString))
             {
@@ -63,28 +49,14 @@ ORDER BY ";
             Expression<Func<Club, object>> selector = null,
             int? top = null)
         {
-            IDictionary<string, object> parameters = new Dictionary<string, object>();
-            
             SqlBuilder sql = @"
 SELECT ";
             sql += top.HasValue ? $"TOP ({top})" : string.Empty;
             sql += (selector ?? DefaultSelector).ToSelectList("c");
             sql += @"
 FROM Club c WITH (NOLOCK)";
-
-            if (predicate != null)
-            {
-                sql += @"
-WHERE ";
-                sql += predicate.ToSearchCondition("c", out parameters);
-            }
-
-            if (orderings != null)
-            {
-                sql += @"
-ORDER BY ";
-                sql += orderings.ToOrderExpression("c");
-            }
+            sql += predicate.ToWhereStatement("c", out var parameters);
+            sql += orderings.ToOrderByStatement("c");
 
             using (var db = new SqlConnection(ConnectionString))
             {

@@ -4,28 +4,44 @@ using System.Linq;
 using System.Linq.Expressions;
 using ArchitectSample.Protocol.Physical;
 using Chef.Extensions.Dapper;
-using Chef.Extensions.IEnumerable;
 
 namespace ArchitectSample.Physical.Extensions
 {
     internal static class ExpressionExtension
     {
-        public static string ToOrderExpression<T>(this IEnumerable<(Expression<Func<T, object>>, Sortord)> me)
+        public static string ToWhereStatement<T>(this Expression<Func<T, bool>> me, out IDictionary<string, object> parameters)
         {
-            return ToOrderExpression(me, string.Empty);
+            return ToWhereStatement(me, string.Empty, out parameters);
         }
 
-        public static string ToOrderExpression<T>(this IEnumerable<(Expression<Func<T, object>>, Sortord)> me, string alias)
+        public static string ToWhereStatement<T>(this Expression<Func<T, bool>> me, string alias, out IDictionary<string, object> parameters)
         {
-            return string.Join(
-                ", ",
-                me.Select(
-                    o =>
-                        {
-                            var (expr, sortord) = o;
+            parameters = new Dictionary<string, object>();
 
-                            return sortord == Sortord.Descending ? expr.ToOrderDescending(alias) : expr.ToOrderAscending(alias);
-                        }));
+            if (me == null) return string.Empty;
+
+            return string.Concat("\r\nWHERE ", me.ToSearchCondition(alias, parameters));
+        }
+
+        public static string ToOrderByStatement<T>(this IEnumerable<(Expression<Func<T, object>>, Sortord)> me)
+        {
+            return ToOrderByStatement(me, string.Empty);
+        }
+
+        public static string ToOrderByStatement<T>(this IEnumerable<(Expression<Func<T, object>>, Sortord)> me, string alias)
+        {
+            if (me == null) return string.Empty;
+            if (!me.Any()) return string.Empty;
+
+            var orderExpression = me.Select(
+                o =>
+                    {
+                        var (expr, sortord) = o;
+
+                        return sortord == Sortord.Descending ? expr.ToOrderDescending(alias) : expr.ToOrderAscending(alias);
+                    });
+
+            return string.Concat("\r\nORDER BY ", string.Join(", ", orderExpression));
         }
     }
 }
