@@ -81,12 +81,12 @@ WHERE ";
             throw new NotImplementedException();
         }
 
-        public Task InsertAsync(List<Club> values)
+        public Task InsertAsync(IEnumerable<Club> values)
         {
             throw new NotImplementedException();
         }
 
-        public Task BulkInsertAsync(List<Club> values)
+        public Task BulkInsertAsync(IEnumerable<Club> values)
         {
             throw new NotImplementedException();
         }
@@ -131,7 +131,7 @@ WHERE ";
             throw new NotImplementedException();
         }
 
-        public Task UpsertAsync(List<Club> values)
+        public Task UpsertAsync(IEnumerable<Club> values)
         {
             throw new NotImplementedException();
         }

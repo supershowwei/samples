@@ -40,12 +40,12 @@ namespace ArchitectSample.Physical.DataAccesses
             throw new NotImplementedException();
         }
 
-        public Task InsertAsync(List<ClubArticle> values)
+        public Task InsertAsync(IEnumerable<ClubArticle> values)
         {
             throw new NotImplementedException();
         }
 
-        public Task BulkInsertAsync(List<ClubArticle> values)
+        public Task BulkInsertAsync(IEnumerable<ClubArticle> values)
         {
             throw new NotImplementedException();
         }
@@ -65,7 +65,7 @@ namespace ArchitectSample.Physical.DataAccesses
             throw new NotImplementedException();
         }
 
-        public Task UpsertAsync(List<ClubArticle> values)
+        public Task UpsertAsync(IEnumerable<ClubArticle> values)
         {
             throw new NotImplementedException();
         }

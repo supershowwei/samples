@@ -26,9 +26,9 @@ namespace ArchitectSample.Protocol.Physical
 
         Task InsertAsync(T value);
 
-        Task InsertAsync(List<T> values);
+        Task InsertAsync(IEnumerable<T> values);
 
-        Task BulkInsertAsync(List<T> values);
+        Task BulkInsertAsync(IEnumerable<T> values);
 
         Task UpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter);
 
@@ -36,7 +36,7 @@ namespace ArchitectSample.Protocol.Physical
 
         Task UpsertAsync(T value);
 
-        Task UpsertAsync(List<T> values);
+        Task UpsertAsync(IEnumerable<T> values);
 
         Task DeleteAsync(Expression<Func<T, bool>> predicate);
     }
