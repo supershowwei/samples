@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using ArchitectSample.Protocol.Physical;
 
-namespace ArchitectSample.Protocol.Physical
+namespace ArchitectSample.Shared
 {
     public class QueryObject<T>
     {

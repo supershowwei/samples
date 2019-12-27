@@ -5,6 +5,12 @@ using System.Threading.Tasks;
 
 namespace ArchitectSample.Protocol.Physical
 {
+    public enum Sortord
+    {
+        Ascending,
+        Descending
+    }
+
     public interface IDataAccess<T>
     {
         Task<T> QueryOneAsync(
