@@ -1,70 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
 
 namespace ArchitectSample.Physical.DataAccesses
 {
-    public class ClubArticleDataAccess : IDataAccess<ClubArticle>
+    public class ClubArticleDataAccess : DataAccessBase<ClubArticle>, IDataAccess<ClubArticle>
     {
-        public Task<ClubArticle> QueryOneAsync(
-            Expression<Func<ClubArticle, bool>> predicate,
-            IEnumerable<(Expression<Func<ClubArticle, object>>, Sortord)> orderings = null,
-            Expression<Func<ClubArticle, object>> selector = null,
-            int? top = null)
+        public ClubArticleDataAccess()
+            : base(File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First())
         {
-            throw new NotImplementedException();
         }
 
-        public Task<List<ClubArticle>> QueryAsync(
-            Expression<Func<ClubArticle, bool>> predicate,
-            IEnumerable<(Expression<Func<ClubArticle, object>>, Sortord)> orderings = null,
-            Expression<Func<ClubArticle, object>> selector = null,
-            int? top = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task InsertAsync(ClubArticle value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task InsertAsync(IEnumerable<ClubArticle> values)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task BulkInsertAsync(IEnumerable<ClubArticle> values)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateAsync(Expression<Func<ClubArticle, bool>> predicate, Expression<Func<ClubArticle>> setter)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateAsync(Expression<Func<ClubArticle, bool>> predicate, Expression<Func<ClubArticle>> setter, IEnumerable<ClubArticle> values)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpsertAsync(ClubArticle value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpsertAsync(IEnumerable<ClubArticle> values)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteAsync(Expression<Func<ClubArticle, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
+        protected override Expression<Func<ClubArticle, object>> DefaultSelector { get; } = x => new { x.Id, x.ClubId, x.Topic, x.Content };
     }
 }

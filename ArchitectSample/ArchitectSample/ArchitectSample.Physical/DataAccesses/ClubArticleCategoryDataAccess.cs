@@ -7,13 +7,14 @@ using ArchitectSample.Protocol.Physical;
 
 namespace ArchitectSample.Physical.DataAccesses
 {
-    public class ClubDataAccess : DataAccessBase<Club>, IDataAccess<Club>
+    public class ClubArticleCategoryDataAccess : DataAccessBase<ClubArticleCategory>, IDataAccess<ClubArticleCategory>
     {
-        public ClubDataAccess()
+        public ClubArticleCategoryDataAccess()
             : base(File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First())
         {
         }
 
-        protected override Expression<Func<Club, object>> DefaultSelector { get; } = x => new { x.Id, x.Name };
+        protected override Expression<Func<ClubArticleCategory, object>> DefaultSelector { get; } =
+            x => new { x.Id, x.Name, x.RequiredReadingVideos };
     }
 }

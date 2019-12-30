@@ -78,5 +78,10 @@ namespace ArchitectSample.Shared.Extensions
         {
             return me.DataAccess.UpdateAsync(me.Predicate, me.Setter);
         }
+
+        public static Task UpdateAsync<T>(this QueryObject<T> me, IEnumerable<T> values)
+        {
+            return me.DataAccess.UpdateAsync(me.Predicate, me.Setter, values);
+        }
     }
 }
