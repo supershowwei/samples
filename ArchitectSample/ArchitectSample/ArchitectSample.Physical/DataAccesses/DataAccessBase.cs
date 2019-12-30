@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ArchitectSample.Physical.Extensions;
 using ArchitectSample.Protocol.Physical;
@@ -17,12 +18,14 @@ namespace ArchitectSample.Physical.DataAccesses
     {
         private readonly string connectionString;
         private readonly string tableName;
+        private readonly string alias;
 
         protected DataAccessBase(string connectionString)
         {
             this.connectionString = connectionString;
 
             this.tableName = typeof(T).GetCustomAttribute<TableAttribute>()?.Name ?? typeof(T).Name;
+            this.alias = Regex.Replace(typeof(T).Name, "[^A-Z]", string.Empty).ToLower();
         }
 
         protected abstract Expression<Func<T, object>> DefaultSelector { get; }
@@ -41,11 +44,11 @@ namespace ArchitectSample.Physical.DataAccesses
             SqlBuilder sql = @"
 SELECT ";
             sql += top.HasValue ? $"TOP ({top})" : string.Empty;
-            sql += (selector ?? this.DefaultSelector).ToSelectList(this.tableName);
+            sql += (selector ?? this.DefaultSelector).ToSelectList(this.alias);
             sql += $@"
-FROM {this.tableName} WITH (NOLOCK)";
-            sql += predicate.ToWhereStatement(this.tableName, out var parameters);
-            sql += orderings.ToOrderByStatement(this.tableName);
+FROM {this.tableName} {this.alias} WITH (NOLOCK)";
+            sql += predicate.ToWhereStatement(this.alias, out var parameters);
+            sql += orderings.ToOrderByStatement(this.alias);
 
             using (var db = new SqlConnection(this.connectionString))
             {
@@ -69,11 +72,11 @@ FROM {this.tableName} WITH (NOLOCK)";
             SqlBuilder sql = @"
 SELECT ";
             sql += top.HasValue ? $"TOP ({top})" : string.Empty;
-            sql += (selector ?? this.DefaultSelector).ToSelectList(this.tableName);
+            sql += (selector ?? this.DefaultSelector).ToSelectList(this.alias);
             sql += $@"
-FROM {this.tableName} WITH (NOLOCK)";
-            sql += predicate.ToWhereStatement(this.tableName, out var parameters);
-            sql += orderings.ToOrderByStatement(this.tableName);
+FROM {this.tableName} {this.alias} WITH (NOLOCK)";
+            sql += predicate.ToWhereStatement(this.alias, out var parameters);
+            sql += orderings.ToOrderByStatement(this.alias);
 
             using (var db = new SqlConnection(this.connectionString))
             {
@@ -81,21 +84,6 @@ FROM {this.tableName} WITH (NOLOCK)";
 
                 return result.ToList();
             }
-        }
-
-        public virtual Task InsertAsync(T value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual Task InsertAsync(IEnumerable<T> values)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual Task BulkInsertAsync(IEnumerable<T> values)
-        {
-            throw new NotImplementedException();
         }
 
         public virtual async Task UpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter)
@@ -132,19 +120,56 @@ WHERE ";
             }
         }
 
-        public virtual Task UpsertAsync(T value)
+        public virtual async Task InsertAsync(Expression<Func<T>> setter)
+        {
+            var columnList = setter.ToColumnList(out var valueList, out var parameters);
+
+            var sql = $@"
+INSERT INTO {this.tableName}({columnList})
+    VALUES ({valueList})";
+
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.ExecuteAsync(sql, parameters);
+            }
+        }
+
+        public Task InsertAsync(T value)
         {
             throw new NotImplementedException();
         }
 
-        public virtual Task UpsertAsync(IEnumerable<T> values)
+        public Task InsertAsync(Expression<Func<T>> setter, IEnumerable<T> values)
         {
             throw new NotImplementedException();
         }
 
-        public virtual Task DeleteAsync(Expression<Func<T, bool>> predicate)
+        public Task BulkInsertAsync(IEnumerable<T> values)
         {
             throw new NotImplementedException();
+        }
+
+        public Task UpsertAsync(T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpsertAsync(IEnumerable<T> values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual async Task DeleteAsync(Expression<Func<T, bool>> predicate)
+        {
+            SqlBuilder sql = $@"
+DELETE FROM {this.tableName}
+WHERE ";
+            sql += predicate.ToSearchCondition(out var parameters);
+
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.ExecuteAsync(sql, parameters);
+            }
         }
     }
 }

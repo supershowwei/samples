@@ -202,5 +202,43 @@ namespace ArchitectSample.Tests
             Assert.AreEqual("名諭爸的股票.權證.實戰夢想室" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
             Assert.AreEqual("何毅的實戰控盤轉折術" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
         }
+
+        [TestMethod]
+        public async Task Test_InsertAsync_and_DeleteAsync()
+        {
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.InsertAsync(() => new Club { Id = 999, Name = "TestClub" });
+
+            var club = await clubDataAccess.Where(x => x.Id == 999).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+            Assert.AreEqual(999, club.Id);
+            Assert.AreEqual("TestClub", club.Name);
+
+            await clubDataAccess.DeleteAsync(x => x.Id == 999);
+
+            club = await clubDataAccess.Where(x => x.Id == 999).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+            Assert.IsNull(club);
+        }
+
+        [TestMethod]
+        public async Task Test_InsertAsync_and_DeleteAsync_use_QueryObject()
+        {
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.Set(() => new Club { Id = 999, Name = "TestClub" }).InsertAsync();
+
+            var club = await clubDataAccess.Where(x => x.Id == 999).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+            Assert.AreEqual(999, club.Id);
+            Assert.AreEqual("TestClub", club.Name);
+
+            await clubDataAccess.Where(x => x.Id == 999).DeleteAsync();
+
+            club = await clubDataAccess.Where(x => x.Id == 999).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+            Assert.IsNull(club);
+        }
     }
 }

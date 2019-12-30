@@ -25,9 +25,11 @@ namespace ArchitectSample.Protocol.Physical
             Expression<Func<T, object>> selector = null,
             int? top = null);
 
+        Task InsertAsync(Expression<Func<T>> setter);
+
         Task InsertAsync(T value);
 
-        Task InsertAsync(IEnumerable<T> values);
+        Task InsertAsync(Expression<Func<T>> setter, IEnumerable<T> values);
 
         Task BulkInsertAsync(IEnumerable<T> values);
 

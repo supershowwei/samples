@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
+using Chef.Extensions.Dapper;
 
 namespace ArchitectSample.Physical.DataAccesses
 {
