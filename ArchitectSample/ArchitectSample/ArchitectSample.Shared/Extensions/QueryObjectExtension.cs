@@ -74,6 +74,16 @@ namespace ArchitectSample.Shared.Extensions
             return me.DataAccess.QueryAsync(me.Predicate, me.OrderExpressions, me.Selector, me.Top);
         }
 
+        public static Task InsertAsync<T>(this QueryObject<T> me)
+        {
+            return me.DataAccess.InsertAsync(me.Setter);
+        }
+
+        public static Task InsertAsync<T>(this QueryObject<T> me, IEnumerable<T> values)
+        {
+            return me.DataAccess.InsertAsync(me.Setter, values);
+        }
+
         public static Task UpdateAsync<T>(this QueryObject<T> me)
         {
             return me.DataAccess.UpdateAsync(me.Predicate, me.Setter);
@@ -84,9 +94,14 @@ namespace ArchitectSample.Shared.Extensions
             return me.DataAccess.UpdateAsync(me.Predicate, me.Setter, values);
         }
 
-        public static Task InsertAsync<T>(this QueryObject<T> me)
+        public static Task UpsertAsync<T>(this QueryObject<T> me)
         {
-            return me.DataAccess.InsertAsync(me.Setter);
+            return me.DataAccess.UpsertAsync(me.Predicate, me.Setter);
+        }
+
+        public static Task UpsertAsync<T>(this QueryObject<T> me, IEnumerable<T> values)
+        {
+            return me.DataAccess.UpsertAsync(me.Predicate, me.Setter, values);
         }
 
         public static Task DeleteAsync<T>(this QueryObject<T> me)

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
 
@@ -15,5 +17,18 @@ namespace ArchitectSample.Physical.DataAccesses
         }
 
         protected override Expression<Func<ClubArticle, object>> DefaultSelector { get; } = x => new { x.Id, x.ClubId, x.Topic, x.Content };
+
+        protected override Expression<Func<ClubArticle>> DefaultColumns { get; } = () =>
+            new ClubArticle { Id = default, ClubId = default, Topic = default, Content = default };
+
+        public Task BulkInsertAsync(IEnumerable<ClubArticle> values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task BulkUpsertAsync(IEnumerable<ClubArticle> values)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -25,9 +25,11 @@ namespace ArchitectSample.Protocol.Physical
             Expression<Func<T, object>> selector = null,
             int? top = null);
 
+        Task InsertAsync(T value);
+
         Task InsertAsync(Expression<Func<T>> setter);
 
-        Task InsertAsync(T value);
+        Task InsertAsync(IEnumerable<T> values);
 
         Task InsertAsync(Expression<Func<T>> setter, IEnumerable<T> values);
 
@@ -37,9 +39,11 @@ namespace ArchitectSample.Protocol.Physical
 
         Task UpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values);
 
-        Task UpsertAsync(T value);
+        Task UpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter);
 
-        Task UpsertAsync(IEnumerable<T> values);
+        Task UpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values);
+
+        Task BulkUpsertAsync(IEnumerable<T> values);
 
         Task DeleteAsync(Expression<Func<T, bool>> predicate);
     }

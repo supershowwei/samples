@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ArchitectSample.Physical.Extensions;
@@ -30,6 +31,8 @@ namespace ArchitectSample.Physical.DataAccesses
 
         protected abstract Expression<Func<T, object>> DefaultSelector { get; }
 
+        protected abstract Expression<Func<T>> DefaultColumns { get; }
+
         public virtual async Task<T> QueryOneAsync(
             Expression<Func<T, bool>> predicate,
             IEnumerable<(Expression<Func<T, object>>, Sortord)> orderings = null,
@@ -49,6 +52,7 @@ SELECT ";
 FROM {this.tableName} {this.alias} WITH (NOLOCK)";
             sql += predicate.ToWhereStatement(this.alias, out var parameters);
             sql += orderings.ToOrderByStatement(this.alias);
+            sql += ";";
 
             using (var db = new SqlConnection(this.connectionString))
             {
@@ -77,12 +81,84 @@ SELECT ";
 FROM {this.tableName} {this.alias} WITH (NOLOCK)";
             sql += predicate.ToWhereStatement(this.alias, out var parameters);
             sql += orderings.ToOrderByStatement(this.alias);
+            sql += ";";
 
             using (var db = new SqlConnection(this.connectionString))
             {
                 var result = await db.QueryAsync<T>(sql, parameters);
 
                 return result.ToList();
+            }
+        }
+
+        public virtual async Task InsertAsync(T value)
+        {
+            var columnList = this.DefaultColumns.ToColumnList(out var valueList);
+
+            var sql = $@"
+INSERT INTO {this.tableName}({columnList})
+    VALUES ({valueList});";
+
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.ExecuteAsync(sql, value);
+            }
+        }
+
+        public virtual async Task InsertAsync(Expression<Func<T>> setter)
+        {
+            var columnList = setter.ToColumnList(out var valueList, out var parameters);
+
+            var sql = $@"
+INSERT INTO {this.tableName}({columnList})
+    VALUES ({valueList});";
+
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.ExecuteAsync(sql, parameters);
+            }
+        }
+
+        public virtual async Task InsertAsync(IEnumerable<T> values)
+        {
+            var columnList = this.DefaultColumns.ToColumnList(out var valueList);
+
+            var sql = $@"
+INSERT INTO {this.tableName}({columnList})
+    VALUES ({valueList});";
+
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.ExecuteAsync(sql, values);
+            }
+        }
+
+        public virtual async Task InsertAsync(Expression<Func<T>> setter, IEnumerable<T> values)
+        {
+            var columnList = setter.ToColumnList(out var valueList);
+
+            var sql = $@"
+INSERT INTO {this.tableName}({columnList})
+    VALUES ({valueList});";
+
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.OpenAsync();
+
+                using (var tx = db.BeginTransaction())
+                {
+                    try
+                    {
+                        await db.ExecuteAsync(sql, values, transaction: tx);
+
+                        tx.Commit();
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 
@@ -95,6 +171,7 @@ SET ";
             sql += @"
 WHERE ";
             sql += predicate.ToSearchCondition(parameters);
+            sql += ";";
 
             using (var db = new SqlConnection(this.connectionString))
             {
@@ -113,6 +190,7 @@ SET ";
             sql += @"
 WHERE ";
             sql += predicate.ToSearchCondition();
+            sql += ";";
 
             using (var db = new SqlConnection(this.connectionString))
             {
@@ -120,13 +198,26 @@ WHERE ";
             }
         }
 
-        public virtual async Task InsertAsync(Expression<Func<T>> setter)
+        public virtual async Task UpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter)
         {
-            var columnList = setter.ToColumnList(out var valueList, out var parameters);
+            SqlBuilder sql = $@"
+UPDATE {this.tableName}
+SET ";
+            sql += setter.ToSetStatements(out var parameters);
+            sql += @"
+WHERE ";
+            sql += predicate.ToSearchCondition(parameters);
+            sql += ";";
 
-            var sql = $@"
-INSERT INTO {this.tableName}({columnList})
-    VALUES ({valueList})";
+            var (columnList, valueList) = ResolveColumnList(sql);
+
+            sql.Append("\r\n");
+            sql += $@"
+IF @@rowcount = 0
+    BEGIN
+        INSERT INTO {this.tableName}({columnList})
+            VALUES ({valueList});
+    END";
 
             using (var db = new SqlConnection(this.connectionString))
             {
@@ -134,29 +225,46 @@ INSERT INTO {this.tableName}({columnList})
             }
         }
 
-        public Task InsertAsync(T value)
+        public virtual async Task UpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values)
         {
-            throw new NotImplementedException();
-        }
+            SqlBuilder sql = $@"
+UPDATE {this.tableName}
+SET ";
+            sql += setter.ToSetStatements();
+            sql += @"
+WHERE ";
+            sql += predicate.ToSearchCondition();
+            sql += ";";
 
-        public Task InsertAsync(Expression<Func<T>> setter, IEnumerable<T> values)
-        {
-            throw new NotImplementedException();
-        }
+            var (columnList, valueList) = ResolveColumnList(sql);
 
-        public Task BulkInsertAsync(IEnumerable<T> values)
-        {
-            throw new NotImplementedException();
-        }
+            sql.Append("\r\n");
+            sql += $@"
+IF @@rowcount = 0
+    BEGIN
+        INSERT INTO {this.tableName}({columnList})
+            VALUES ({valueList});
+    END";
 
-        public Task UpsertAsync(T value)
-        {
-            throw new NotImplementedException();
-        }
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.OpenAsync();
 
-        public Task UpsertAsync(IEnumerable<T> values)
-        {
-            throw new NotImplementedException();
+                using (var tx = db.BeginTransaction())
+                {
+                    try
+                    {
+                        await db.ExecuteAsync(sql, values, transaction: tx);
+
+                        tx.Commit();
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
+            }
         }
 
         public virtual async Task DeleteAsync(Expression<Func<T, bool>> predicate)
@@ -170,6 +278,20 @@ WHERE ";
             {
                 await db.ExecuteAsync(sql, parameters);
             }
+        }
+
+        private static (string, string) ResolveColumnList(string sql)
+        {
+            var columnList = new Dictionary<string, string>();
+
+            foreach (var match in Regex.Matches(sql, @"(\[[^\]]+\]) [^\s] ([@\{]=?[^,\s\}]+(_[\d]+)?\}?)").Cast<Match>())
+            {
+                if (columnList.ContainsKey(match.Groups[1].Value)) continue;
+
+                columnList.Add(match.Groups[1].Value, match.Groups[2].Value);
+            }
+
+            return (string.Join(", ", columnList.Keys), string.Join(", ", columnList.Values));
         }
     }
 }

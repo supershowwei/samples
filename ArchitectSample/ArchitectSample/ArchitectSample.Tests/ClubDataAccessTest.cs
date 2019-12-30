@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using System.Transactions;
 using ArchitectSample.Physical.DataAccesses;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
@@ -206,18 +207,41 @@ namespace ArchitectSample.Tests
         [TestMethod]
         public async Task Test_InsertAsync_and_DeleteAsync()
         {
+            var clubId = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000);
+
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
 
-            await clubDataAccess.InsertAsync(() => new Club { Id = 999, Name = "TestClub" });
+            await clubDataAccess.InsertAsync(new Club { Id = clubId, Name = "TestClub" });
 
-            var club = await clubDataAccess.Where(x => x.Id == 999).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+            var club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
 
-            Assert.AreEqual(999, club.Id);
+            Assert.AreEqual(clubId, club.Id);
             Assert.AreEqual("TestClub", club.Name);
 
-            await clubDataAccess.DeleteAsync(x => x.Id == 999);
+            await clubDataAccess.DeleteAsync(x => x.Id == clubId);
 
-            club = await clubDataAccess.Where(x => x.Id == 999).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+            club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+            Assert.IsNull(club);
+        }
+
+        [TestMethod]
+        public async Task Test_InsertAsync_and_DeleteAsync_use_Setter()
+        {
+            var clubId = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000);
+            
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.InsertAsync(() => new Club { Id = clubId, Name = "TestClub" });
+
+            var club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+            Assert.AreEqual(clubId, club.Id);
+            Assert.AreEqual("TestClub", club.Name);
+
+            await clubDataAccess.DeleteAsync(x => x.Id == clubId);
+
+            club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
 
             Assert.IsNull(club);
         }
@@ -225,20 +249,307 @@ namespace ArchitectSample.Tests
         [TestMethod]
         public async Task Test_InsertAsync_and_DeleteAsync_use_QueryObject()
         {
+            var clubId = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000);
+
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
 
-            await clubDataAccess.Set(() => new Club { Id = 999, Name = "TestClub" }).InsertAsync();
+            await clubDataAccess.Set(() => new Club { Id = clubId, Name = "TestClub" }).InsertAsync();
 
-            var club = await clubDataAccess.Where(x => x.Id == 999).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+            var club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
 
-            Assert.AreEqual(999, club.Id);
+            Assert.AreEqual(clubId, club.Id);
             Assert.AreEqual("TestClub", club.Name);
 
-            await clubDataAccess.Where(x => x.Id == 999).DeleteAsync();
+            await clubDataAccess.Where(x => x.Id == clubId).DeleteAsync();
 
-            club = await clubDataAccess.Where(x => x.Id == 999).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+            club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
 
             Assert.IsNull(club);
+        }
+
+        [TestMethod]
+        public async Task Test_InsertAsync_and_DeleteAsync_Multiply()
+        {
+            var clubIds = new[]
+                          {
+                              new Random(Guid.NewGuid().GetHashCode()).Next(100, 500),
+                              new Random(Guid.NewGuid().GetHashCode()).Next(500, 1000)
+                          };
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.InsertAsync(
+                new List<Club>
+                {
+                    new Club { Id = clubIds[1], Name = "TestClub999", IsActive = true }, new Club { Id = clubIds[0], Name = "TestClub998" }
+                });
+
+            var clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id))
+                            .OrderBy(x => x.Id)
+                            .Select(x => new { x.Id, x.Name, x.IsActive })
+                            .QueryAsync();
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual(clubIds[0], clubs[0].Id);
+            Assert.AreEqual(false, clubs[0].IsActive);
+            Assert.AreEqual(true, clubs[1].IsActive);
+            Assert.AreEqual("TestClub999", clubs[1].Name);
+
+            await clubDataAccess.DeleteAsync(x => clubIds.Contains(x.Id));
+
+            clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id)).Select(x => new { x.Id, x.Name }).QueryAsync();
+
+            Assert.AreEqual(0, clubs.Count);
+        }
+
+        [TestMethod]
+        public async Task Test_InsertAsync_and_DeleteAsync_Multiply_use_Setter()
+        {
+            var clubIds = new[]
+                          {
+                              new Random(Guid.NewGuid().GetHashCode()).Next(100, 500),
+                              new Random(Guid.NewGuid().GetHashCode()).Next(500, 1000)
+                          };
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.InsertAsync(
+                () => new Club { Id = default, Name = default },
+                new List<Club> { new Club { Id = clubIds[1], Name = "TestClub999" }, new Club { Id = clubIds[0], Name = "TestClub998" } });
+
+            var clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id))
+                            .OrderBy(x => x.Id)
+                            .Select(x => new { x.Id, x.Name })
+                            .QueryAsync();
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual(clubIds[0], clubs[0].Id);
+            Assert.AreEqual("TestClub999", clubs[1].Name);
+
+            await clubDataAccess.DeleteAsync(x => clubIds.Contains(x.Id));
+
+            clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id)).Select(x => new { x.Id, x.Name }).QueryAsync();
+
+            Assert.AreEqual(0, clubs.Count);
+        }
+
+        [TestMethod]
+        public async Task Test_InsertAsync_and_DeleteAsync_Multiply_use_Setter_and_QueryObject()
+        {
+            var clubIds = new[]
+                          {
+                              new Random(Guid.NewGuid().GetHashCode()).Next(100, 500),
+                              new Random(Guid.NewGuid().GetHashCode()).Next(500, 1000)
+                          };
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.Set(() => new Club { Id = default, Name = default })
+                .InsertAsync(new List<Club> { new Club { Id = clubIds[1], Name = "TestClub999" }, new Club { Id = clubIds[0], Name = "TestClub998" } });
+
+            var clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id))
+                            .OrderBy(x => x.Id)
+                            .Select(x => new { x.Id, x.Name })
+                            .QueryAsync();
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual(clubIds[0], clubs[0].Id);
+            Assert.AreEqual("TestClub999", clubs[1].Name);
+
+            await clubDataAccess.DeleteAsync(x => clubIds.Contains(x.Id));
+
+            clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id)).Select(x => new { x.Id, x.Name }).QueryAsync();
+
+            Assert.AreEqual(0, clubs.Count);
+        }
+
+        [TestMethod]
+        public async Task Test_UpsertAsync()
+        {
+            var clubId = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000);
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.UpsertAsync(x => x.Id == clubId, () => new Club { Name = "TestClub" });
+
+            var club = await clubDataAccess.Where(x => x.Id == clubId)
+                            .Select(x => new { x.Id, x.Name, x.IsActive })
+                            .QueryOneAsync();
+
+            Assert.AreEqual(clubId, club.Id);
+            Assert.AreEqual("TestClub", club.Name);
+            Assert.AreEqual(true, club.IsActive);
+
+            await clubDataAccess.UpsertAsync(
+                x => x.Id == clubId && x.IsActive == true,
+                () => new Club { Name = "TestClub997", IsActive = false });
+
+            club = await clubDataAccess.Where(x => x.Id == clubId)
+                       .Select(x => new { x.Id, x.Name, x.IsActive })
+                       .QueryOneAsync();
+
+            Assert.AreEqual(clubId, club.Id);
+            Assert.AreEqual("TestClub997", club.Name);
+            Assert.AreEqual(false, club.IsActive);
+
+            await clubDataAccess.DeleteAsync(x => x.Id == clubId);
+
+            club = await clubDataAccess.Where(x => x.Id == clubId)
+                       .Select(x => new { x.Id, x.Name, x.IsActive })
+                       .QueryOneAsync();
+
+            Assert.IsNull(club);
+        }
+
+        [TestMethod]
+        public async Task Test_UpsertAsync_use_QueryObject()
+        {
+            var clubId = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000);
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.Where(x => x.Id == clubId).Set(() => new Club { Name = "TestClub" }).UpsertAsync();
+
+            var club = await clubDataAccess.Where(x => x.Id == clubId)
+                            .Select(x => new { x.Id, x.Name, x.IsActive })
+                            .QueryOneAsync();
+
+            Assert.AreEqual(clubId, club.Id);
+            Assert.AreEqual("TestClub", club.Name);
+            Assert.AreEqual(true, club.IsActive);
+
+
+            await clubDataAccess.Where(x => x.Id == clubId && x.IsActive == true)
+                .Set(() => new Club { Name = "TestClub997", IsActive = false })
+                .UpsertAsync();
+
+            club = await clubDataAccess.Where(x => x.Id == clubId)
+                       .Select(x => new { x.Id, x.Name, x.IsActive })
+                       .QueryOneAsync();
+
+            Assert.AreEqual(clubId, club.Id);
+            Assert.AreEqual("TestClub997", club.Name);
+            Assert.AreEqual(false, club.IsActive);
+
+            await clubDataAccess.DeleteAsync(x => x.Id == clubId);
+
+            club = await clubDataAccess.Where(x => x.Id == clubId)
+                       .Select(x => new { x.Id, x.Name, x.IsActive })
+                       .QueryOneAsync();
+
+            Assert.IsNull(club);
+        }
+
+        [TestMethod]
+        public async Task Test_UpsertAsync_Multiply()
+        {
+            var clubIds = new[]
+                          {
+                              new Random(Guid.NewGuid().GetHashCode()).Next(100, 500),
+                              new Random(Guid.NewGuid().GetHashCode()).Next(500, 1000)
+                          };
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.UpsertAsync(
+                x => x.Id == default,
+                () => new Club { Name = default },
+                new List<Club> { new Club { Id = clubIds[0], Name = "TestClub1" }, new Club { Id = clubIds[1], Name = "TestClub2" } });
+
+            var clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id))
+                            .OrderBy(x => x.Id)
+                            .Select(x => new { x.Id, x.Name })
+                            .QueryAsync();
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual("TestClub1", clubs[0].Name);
+            Assert.AreEqual("TestClub2", clubs[1].Name);
+
+            await clubDataAccess.UpsertAsync(
+                x => x.Id == default,
+                () => new Club { Name = default },
+                new List<Club> { new Club { Id = clubIds[0], Name = "TestClub3" }, new Club { Id = clubIds[1], Name = "TestClub4" } });
+
+            clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id))
+                        .OrderBy(x => x.Id)
+                        .Select(x => new { x.Id, x.Name })
+                        .QueryAsync();
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual("TestClub3", clubs[0].Name);
+            Assert.AreEqual("TestClub4", clubs[1].Name);
+
+            await clubDataAccess.DeleteAsync(x => clubIds.Contains(x.Id));
+        }
+
+        [TestMethod]
+        public async Task Test_UpsertAsync_Multiply_use_QueryObject()
+        {
+            var clubIds = new[]
+                          {
+                              new Random(Guid.NewGuid().GetHashCode()).Next(100, 500),
+                              new Random(Guid.NewGuid().GetHashCode()).Next(500, 1000)
+                          };
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.Where(x => x.Id == default)
+                .Set(() => new Club { Name = default })
+                .UpsertAsync(
+                    new List<Club> { new Club { Id = clubIds[0], Name = "TestClub1" }, new Club { Id = clubIds[1], Name = "TestClub2" } });
+
+            var clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id))
+                            .OrderBy(x => x.Id)
+                            .Select(x => new { x.Id, x.Name })
+                            .QueryAsync();
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual("TestClub1", clubs[0].Name);
+            Assert.AreEqual("TestClub2", clubs[1].Name);
+
+            await clubDataAccess.Where(x => x.Id == default)
+                .Set(() => new Club { Name = default })
+                .UpsertAsync(
+                    new List<Club> { new Club { Id = clubIds[0], Name = "TestClub3" }, new Club { Id = clubIds[1], Name = "TestClub4" } });
+
+            clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id))
+                        .OrderBy(x => x.Id)
+                        .Select(x => new { x.Id, x.Name })
+                        .QueryAsync();
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual("TestClub3", clubs[0].Name);
+            Assert.AreEqual("TestClub4", clubs[1].Name);
+
+            await clubDataAccess.DeleteAsync(x => clubIds.Contains(x.Id));
+        }
+
+        [TestMethod]
+        public async Task Test_TransactionScope_Query_and_Update()
+        {
+            var clubId = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000);
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.InsertAsync(() => new Club { Id = clubId, Name = "TestClub" });
+
+            Club club;
+            using (var tx = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+                club.Name += "989";
+
+                await clubDataAccess.Where(x => x.Id == clubId).Set(() => new Club { Name = club.Name }).UpdateAsync();
+
+                tx.Complete();
+            }
+
+            club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+            await clubDataAccess.DeleteAsync(x => x.Id == clubId);
+
+            Assert.AreEqual("TestClub989", club.Name);
         }
     }
 }

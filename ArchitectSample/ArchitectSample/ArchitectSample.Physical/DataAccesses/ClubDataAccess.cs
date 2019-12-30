@@ -18,5 +18,18 @@ namespace ArchitectSample.Physical.DataAccesses
         }
 
         protected override Expression<Func<Club, object>> DefaultSelector { get; } = x => new { x.Id, x.Name };
+
+        protected override Expression<Func<Club>> DefaultColumns { get; } =
+            () => new Club { Id = default, Name = default, IsActive = default };
+
+        public Task BulkInsertAsync(IEnumerable<Club> values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task BulkUpsertAsync(IEnumerable<Club> values)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
