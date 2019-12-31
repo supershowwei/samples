@@ -15,10 +15,18 @@ using Dapper;
 
 namespace ArchitectSample.Physical.DataAccesses
 {
-    public abstract class DataAccessBase<T>
+    public class DataAccessBase
     {
-        private static readonly Regex ParametersRegex = new Regex(@"(\[[^\]]+\]) [^\s]+ [_0-9a-zA-Z]*\.?([@\{\[]=?[^,\s\}\)]+(_[\d]+)?\}?\]?)");
-        private static readonly Regex ColumnRegex = new Regex(@"\[[^\]]+\]");
+        protected static readonly Regex ColumnListRegex = new Regex(@"(\[[^\]]+\]) [^\s]+ ([_0-9a-zA-Z]+\.)?([@\{\[]=?[^,\s\}\)]+(_[\d]+)?\]?\}?)");
+        protected static readonly Regex ColumnRegex = new Regex(@"\[[^\]]+\]");
+
+        protected DataAccessBase()
+        {
+        }
+    }
+
+    public abstract class DataAccessBase<T> : DataAccessBase
+    {
         private readonly string connectionString;
         private readonly string tableName;
         private readonly string alias;
@@ -257,7 +265,7 @@ UPDATE {this.tableName}
 SET {ColumnRegex.Replace(columnList, "$0 = tvp.$0")}
 FROM {this.tableName} t
 INNER JOIN @TableVariable tvp
-    ON {ParametersRegex.Replace(searchCondition, "t.$1 = tvp.$1")};";
+    ON {ColumnListRegex.Replace(searchCondition, "t.$1 = tvp.$1")};";
 
             var (tableType, tableVariable) = this.ConvertToTableValuedParameters(values);
 
@@ -361,7 +369,7 @@ UPDATE {this.tableName}
 SET {ColumnRegex.Replace(columnList, "$0 = tvp.$0")}
 FROM {this.tableName} t
 INNER JOIN @TableVariable tvp
-    ON {ParametersRegex.Replace(searchCondition, "t.$1 = tvp.$1")};";
+    ON {ColumnListRegex.Replace(searchCondition, "t.$1 = tvp.$1")};";
 
             (columnList, _) = ResolveColumnList(sql);
 
@@ -373,7 +381,7 @@ INSERT INTO {this.tableName}({columnList})
     WHERE NOT EXISTS (SELECT
                 1
             FROM {this.tableName} t WITH (NOLOCK)
-            WHERE {ParametersRegex.Replace(searchCondition, "t.$1 = tvp.$1")});";
+            WHERE {ColumnListRegex.Replace(searchCondition, "t.$1 = tvp.$1")});";
 
             var (tableType, tableVariable) = this.ConvertToTableValuedParameters(values);
 
@@ -417,11 +425,11 @@ WHERE ";
         {
             var columnList = new Dictionary<string, string>();
 
-            foreach (var match in ParametersRegex.Matches(sql).Cast<Match>())
+            foreach (var match in ColumnListRegex.Matches(sql).Cast<Match>())
             {
                 if (columnList.ContainsKey(match.Groups[1].Value)) continue;
 
-                columnList.Add(match.Groups[1].Value, match.Groups[2].Value);
+                columnList.Add(match.Groups[1].Value, match.Groups[3].Value);
             }
 
             return (string.Join(", ", columnList.Keys), string.Join(", ", columnList.Values));
