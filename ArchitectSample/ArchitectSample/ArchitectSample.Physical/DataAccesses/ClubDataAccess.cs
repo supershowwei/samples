@@ -22,7 +22,7 @@ namespace ArchitectSample.Physical.DataAccesses
         protected override Expression<Func<Club>> RequiredColumns { get; } =
             () => new Club { Id = default, Name = default, IsActive = default };
 
-        protected override (string, DataTable) ConvertToTableValueParameters(IEnumerable<Club> values)
+        protected override (string, DataTable) ConvertToTableValuedParameters(IEnumerable<Club> values)
         {
             var dataTable = CreateDataTable();
 

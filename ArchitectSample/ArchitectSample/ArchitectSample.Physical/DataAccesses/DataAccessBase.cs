@@ -17,6 +17,8 @@ namespace ArchitectSample.Physical.DataAccesses
 {
     public abstract class DataAccessBase<T>
     {
+        private static readonly Regex ParametersRegex = new Regex(@"(\[[^\]]+\]) [^\s]+ [_0-9a-zA-Z]*\.?([@\{\[]=?[^,\s\}\)]+(_[\d]+)?\}?\]?)");
+        private static readonly Regex ColumnRegex = new Regex(@"\[[^\]]+\]");
         private readonly string connectionString;
         private readonly string tableName;
         private readonly string alias;
@@ -168,10 +170,10 @@ INSERT INTO {this.tableName}({columnList})
 
             SqlBuilder sql = $@"
 INSERT INTO {this.tableName}({columnList})
-    SELECT {columnList}
-    FROM @TableVariable;";
+    SELECT {ColumnRegex.Replace(columnList, "$0 = tvp.$0")}
+    FROM @TableVariable tvp;";
 
-            var (tableType, tableVariable) = this.ConvertToTableValueParameters(values);
+            var (tableType, tableVariable) = this.ConvertToTableValuedParameters(values);
 
             using (var db = new SqlConnection(this.connectionString))
             {
@@ -215,9 +217,24 @@ WHERE ";
             }
         }
 
-        public Task BulkUpdateAsync(IEnumerable<T> values)
+        public virtual async Task BulkUpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values)
         {
-            throw new NotImplementedException();
+            var columnList = setter.ToColumnList(out _);
+            var searchCondition = predicate.ToSearchCondition();
+
+            var sql = $@"
+UPDATE {this.tableName}
+SET {ColumnRegex.Replace(columnList, "$0 = tvp.$0")}
+FROM {this.tableName} t
+INNER JOIN @TableVariable tvp
+    ON {ParametersRegex.Replace(searchCondition, "t.$1 = tvp.$1")};";
+
+            var (tableType, tableVariable) = this.ConvertToTableValuedParameters(values);
+
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.ExecuteAsync(sql, new { TableVariable = tableVariable.AsTableValuedParameter(tableType) });
+            }
         }
 
         public virtual async Task UpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter)
@@ -289,11 +306,37 @@ IF @@rowcount = 0
             }
         }
 
-        public Task BulkUpsertAsync(IEnumerable<T> values)
+        public virtual async Task BulkUpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values)
         {
-            throw new NotImplementedException();
-        }
+            var columnList = setter.ToColumnList(out _);
+            var searchCondition = predicate.ToSearchCondition();
 
+            SqlBuilder sql = $@"
+UPDATE {this.tableName}
+SET {ColumnRegex.Replace(columnList, "$0 = tvp.$0")}
+FROM {this.tableName} t
+INNER JOIN @TableVariable tvp
+    ON {ParametersRegex.Replace(searchCondition, "t.$1 = tvp.$1")};";
+
+            (columnList, _) = ResolveColumnList(sql);
+
+            sql.Append("\r\n");
+            sql += $@"
+INSERT INTO {this.tableName}({columnList})
+    SELECT {ColumnRegex.Replace(columnList, "tvp.$0")}
+    FROM @TableVariable tvp
+    WHERE NOT EXISTS (SELECT
+                1
+            FROM {this.tableName} t WITH (NOLOCK)
+            WHERE {ParametersRegex.Replace(searchCondition, "t.$1 = tvp.$1")});";
+
+            var (tableType, tableVariable) = this.ConvertToTableValuedParameters(values);
+
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.ExecuteAsync(sql, new { TableVariable = tableVariable.AsTableValuedParameter(tableType) });
+            }
+        }
 
         public virtual async Task DeleteAsync(Expression<Func<T, bool>> predicate)
         {
@@ -308,13 +351,13 @@ WHERE ";
             }
         }
 
-        protected abstract (string, DataTable) ConvertToTableValueParameters(IEnumerable<T> values);
+        protected abstract (string, DataTable) ConvertToTableValuedParameters(IEnumerable<T> values);
 
         private static (string, string) ResolveColumnList(string sql)
         {
             var columnList = new Dictionary<string, string>();
 
-            foreach (var match in Regex.Matches(sql, @"(\[[^\]]+\]) [^\s] ([@\{]=?[^,\s\}]+(_[\d]+)?\}?)").Cast<Match>())
+            foreach (var match in ParametersRegex.Matches(sql).Cast<Match>())
             {
                 if (columnList.ContainsKey(match.Groups[1].Value)) continue;
 

@@ -39,13 +39,13 @@ namespace ArchitectSample.Protocol.Physical
 
         Task UpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values);
 
-        Task BulkUpdateAsync(IEnumerable<T> values);
+        Task BulkUpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values);
 
         Task UpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter);
 
         Task UpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values);
 
-        Task BulkUpsertAsync(IEnumerable<T> values);
+        Task BulkUpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter, IEnumerable<T> values);
 
         Task DeleteAsync(Expression<Func<T, bool>> predicate);
     }
