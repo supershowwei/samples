@@ -41,6 +41,7 @@ namespace ArchitectSample.Physical.DataAccesses
             dataTable.Columns.Add("ClubID", typeof(int));
             dataTable.Columns.Add("Name", typeof(string));
             dataTable.Columns.Add("IsActive", typeof(bool));
+
             return dataTable;
         }
 

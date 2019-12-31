@@ -131,7 +131,22 @@ INSERT INTO {this.tableName}({columnList})
 
             using (var db = new SqlConnection(this.connectionString))
             {
-                await db.ExecuteAsync(sql, values);
+                await db.OpenAsync();
+
+                using (var tx = db.BeginTransaction())
+                {
+                    try
+                    {
+                        await db.ExecuteAsync(sql, values, transaction: tx);
+
+                        tx.Commit();
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 
@@ -213,7 +228,22 @@ WHERE ";
 
             using (var db = new SqlConnection(this.connectionString))
             {
-                await db.ExecuteAsync(sql, values);
+                await db.OpenAsync();
+
+                using (var tx = db.BeginTransaction())
+                {
+                    try
+                    {
+                        await db.ExecuteAsync(sql, values, transaction: tx);
+
+                        tx.Commit();
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 
@@ -260,7 +290,22 @@ IF @@rowcount = 0
 
             using (var db = new SqlConnection(this.connectionString))
             {
-                await db.ExecuteAsync(sql, parameters);
+                await db.OpenAsync();
+
+                using (var tx = db.BeginTransaction())
+                {
+                    try
+                    {
+                        await db.ExecuteAsync(sql, parameters, transaction: tx);
+
+                        tx.Commit();
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 
@@ -334,7 +379,22 @@ INSERT INTO {this.tableName}({columnList})
 
             using (var db = new SqlConnection(this.connectionString))
             {
-                await db.ExecuteAsync(sql, new { TableVariable = tableVariable.AsTableValuedParameter(tableType) });
+                await db.OpenAsync();
+
+                using (var tx = db.BeginTransaction())
+                {
+                    try
+                    {
+                        await db.ExecuteAsync(sql, new { TableVariable = tableVariable.AsTableValuedParameter(tableType) }, transaction: tx);
+
+                        tx.Commit();
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 
