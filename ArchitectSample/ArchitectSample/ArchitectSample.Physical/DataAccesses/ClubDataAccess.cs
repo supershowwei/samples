@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
-using Chef.Extensions.Dapper;
 
 namespace ArchitectSample.Physical.DataAccesses
 {
@@ -19,17 +19,40 @@ namespace ArchitectSample.Physical.DataAccesses
 
         protected override Expression<Func<Club, object>> DefaultSelector { get; } = x => new { x.Id, x.Name };
 
-        protected override Expression<Func<Club>> DefaultColumns { get; } =
+        protected override Expression<Func<Club>> RequiredColumns { get; } =
             () => new Club { Id = default, Name = default, IsActive = default };
 
-        public Task BulkInsertAsync(IEnumerable<Club> values)
+        protected override (string, DataTable) ConvertToTableValueParameters(IEnumerable<Club> values)
         {
-            throw new NotImplementedException();
+            var dataTable = CreateDataTable();
+
+            foreach (var value in values)
+            {
+                dataTable.Rows.Add(CreateDataRow(dataTable, value));
+            }
+
+            return ("ClubType", dataTable);
         }
 
-        public Task BulkUpsertAsync(IEnumerable<Club> values)
+        private static DataTable CreateDataTable()
         {
-            throw new NotImplementedException();
+            var dataTable = new DataTable();
+
+            dataTable.Columns.Add("ClubID", typeof(int));
+            dataTable.Columns.Add("Name", typeof(string));
+            dataTable.Columns.Add("IsActive", typeof(bool));
+            return dataTable;
+        }
+
+        private static DataRow CreateDataRow(DataTable dataTable, Club value)
+        {
+            var dataRow = dataTable.NewRow();
+
+            dataRow["ClubID"] = value.Id;
+            dataRow["Name"] = value.Name;
+            dataRow["IsActive"] = value.IsActive;
+
+            return dataRow;
         }
     }
 }

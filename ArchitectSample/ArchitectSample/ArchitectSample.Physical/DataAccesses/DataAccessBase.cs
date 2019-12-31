@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ArchitectSample.Physical.Extensions;
@@ -31,7 +31,7 @@ namespace ArchitectSample.Physical.DataAccesses
 
         protected abstract Expression<Func<T, object>> DefaultSelector { get; }
 
-        protected abstract Expression<Func<T>> DefaultColumns { get; }
+        protected abstract Expression<Func<T>> RequiredColumns { get; }
 
         public virtual async Task<T> QueryOneAsync(
             Expression<Func<T, bool>> predicate,
@@ -93,7 +93,7 @@ FROM {this.tableName} {this.alias} WITH (NOLOCK)";
 
         public virtual async Task InsertAsync(T value)
         {
-            var columnList = this.DefaultColumns.ToColumnList(out var valueList);
+            var columnList = this.RequiredColumns.ToColumnList(out var valueList);
 
             var sql = $@"
 INSERT INTO {this.tableName}({columnList})
@@ -121,7 +121,7 @@ INSERT INTO {this.tableName}({columnList})
 
         public virtual async Task InsertAsync(IEnumerable<T> values)
         {
-            var columnList = this.DefaultColumns.ToColumnList(out var valueList);
+            var columnList = this.RequiredColumns.ToColumnList(out var valueList);
 
             var sql = $@"
 INSERT INTO {this.tableName}({columnList})
@@ -162,6 +162,23 @@ INSERT INTO {this.tableName}({columnList})
             }
         }
 
+        public virtual async Task BulkInsertAsync(Expression<Func<T>> setter, IEnumerable<T> values)
+        {
+            var columnList = setter.ToColumnList(out _);
+
+            SqlBuilder sql = $@"
+INSERT INTO {this.tableName}({columnList})
+    SELECT {columnList}
+    FROM @TableVariable;";
+
+            var (tableType, tableVariable) = this.ConvertToTableValueParameters(values);
+
+            using (var db = new SqlConnection(this.connectionString))
+            {
+                await db.ExecuteAsync(sql, new { TableVariable = tableVariable.AsTableValuedParameter(tableType) });
+            }
+        }
+
         public virtual async Task UpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter)
         {
             SqlBuilder sql = $@"
@@ -196,6 +213,11 @@ WHERE ";
             {
                 await db.ExecuteAsync(sql, values);
             }
+        }
+
+        public Task BulkUpdateAsync(IEnumerable<T> values)
+        {
+            throw new NotImplementedException();
         }
 
         public virtual async Task UpsertAsync(Expression<Func<T, bool>> predicate, Expression<Func<T>> setter)
@@ -267,6 +289,12 @@ IF @@rowcount = 0
             }
         }
 
+        public Task BulkUpsertAsync(IEnumerable<T> values)
+        {
+            throw new NotImplementedException();
+        }
+
+
         public virtual async Task DeleteAsync(Expression<Func<T, bool>> predicate)
         {
             SqlBuilder sql = $@"
@@ -279,6 +307,8 @@ WHERE ";
                 await db.ExecuteAsync(sql, parameters);
             }
         }
+
+        protected abstract (string, DataTable) ConvertToTableValueParameters(IEnumerable<T> values);
 
         private static (string, string) ResolveColumnList(string sql)
         {

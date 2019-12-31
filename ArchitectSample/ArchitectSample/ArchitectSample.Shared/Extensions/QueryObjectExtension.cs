@@ -84,6 +84,11 @@ namespace ArchitectSample.Shared.Extensions
             return me.DataAccess.InsertAsync(me.Setter, values);
         }
 
+        public static Task BulkInsertAsync<T>(this QueryObject<T> me, IEnumerable<T> values)
+        {
+            return me.DataAccess.BulkInsertAsync(me.Setter, values);
+        }
+
         public static Task UpdateAsync<T>(this QueryObject<T> me)
         {
             return me.DataAccess.UpdateAsync(me.Predicate, me.Setter);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -19,15 +20,10 @@ namespace ArchitectSample.Physical.DataAccesses
         protected override Expression<Func<ClubArticleCategory, object>> DefaultSelector { get; } =
             x => new { x.Id, x.Name, x.RequiredReadingVideos };
 
-        protected override Expression<Func<ClubArticleCategory>> DefaultColumns { get; } = () =>
+        protected override Expression<Func<ClubArticleCategory>> RequiredColumns { get; } = () =>
             new ClubArticleCategory { Id = default, Name = default, RequiredReadingVideos = default };
 
-        public Task BulkInsertAsync(IEnumerable<ClubArticleCategory> values)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task BulkUpsertAsync(IEnumerable<ClubArticleCategory> values)
+        protected override (string, DataTable) ConvertToTableValueParameters(IEnumerable<ClubArticleCategory> values)
         {
             throw new NotImplementedException();
         }

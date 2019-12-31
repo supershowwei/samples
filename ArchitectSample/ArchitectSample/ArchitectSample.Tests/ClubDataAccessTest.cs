@@ -525,6 +525,60 @@ namespace ArchitectSample.Tests
         }
 
         [TestMethod]
+        public async Task Test_BulkInsert()
+        {
+            var clubIds = new[]
+                          {
+                              new Random(Guid.NewGuid().GetHashCode()).Next(100, 500),
+                              new Random(Guid.NewGuid().GetHashCode()).Next(500, 1000)
+                          };
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.BulkInsertAsync(
+                () => new Club { Id = default, Name = default },
+                new List<Club> { new Club { Id = clubIds[0], Name = "TestClub1" }, new Club { Id = clubIds[1], Name = "TestClub2" } });
+
+            var clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id))
+                            .OrderBy(x => x.Id)
+                            .Select(x => new { x.Id, x.Name })
+                            .QueryAsync();
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual("TestClub1", clubs[0].Name);
+            Assert.AreEqual("TestClub2", clubs[1].Name);
+
+            await clubDataAccess.DeleteAsync(x => clubIds.Contains(x.Id));
+        }
+
+        [TestMethod]
+        public async Task Test_BulkInsert_use_QueryObject()
+        {
+            var clubIds = new[]
+                          {
+                              new Random(Guid.NewGuid().GetHashCode()).Next(100, 500),
+                              new Random(Guid.NewGuid().GetHashCode()).Next(500, 1000)
+                          };
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.Set(() => new Club { Id = default, Name = default })
+                .BulkInsertAsync(
+                    new List<Club> { new Club { Id = clubIds[0], Name = "TestClub1" }, new Club { Id = clubIds[1], Name = "TestClub2" } });
+
+            var clubs = await clubDataAccess.Where(x => clubIds.Contains(x.Id))
+                            .OrderBy(x => x.Id)
+                            .Select(x => new { x.Id, x.Name })
+                            .QueryAsync();
+
+            Assert.AreEqual(2, clubs.Count);
+            Assert.AreEqual("TestClub1", clubs[0].Name);
+            Assert.AreEqual("TestClub2", clubs[1].Name);
+
+            await clubDataAccess.DeleteAsync(x => clubIds.Contains(x.Id));
+        }
+
+        [TestMethod]
         public async Task Test_TransactionScope_Query_and_Update()
         {
             var clubId = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000);
