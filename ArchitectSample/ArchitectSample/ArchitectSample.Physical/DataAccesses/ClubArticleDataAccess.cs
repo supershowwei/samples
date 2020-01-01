@@ -9,7 +9,7 @@ using Chef.Extensions.DbAccess;
 
 namespace ArchitectSample.Physical.DataAccesses
 {
-    public class ClubArticleDataAccess : SqlServerDataAccess<ClubArticle>, IDataAccess<ClubArticle>
+    public class ClubArticleDataAccess : SqlServerDataAccess<ClubArticle>
     {
         public ClubArticleDataAccess()
             : base(File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First())
