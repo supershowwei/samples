@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Transactions;
 using ArchitectSample.Physical.DataAccesses;
 using ArchitectSample.Protocol.Model.Data;
-using ArchitectSample.Protocol.Physical;
-using ArchitectSample.Shared.Extensions;
+using Chef.Extensions.DbAccess;
+using Chef.Extensions.DbAccess.Fluent;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ArchitectSample.Tests

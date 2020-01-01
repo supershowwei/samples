@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using ArchitectSample.Logic;
 using ArchitectSample.Protocol.Logic;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Physical;
-using ArchitectSample.WebApp.Extensions;
 using Autofac;
+using Chef.Extensions.DbAccess;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

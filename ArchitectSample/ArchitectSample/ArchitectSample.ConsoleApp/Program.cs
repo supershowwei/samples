@@ -2,13 +2,13 @@
 using System.Threading.Tasks;
 using ArchitectSample.Physical.DataAccesses;
 using ArchitectSample.Protocol.Model.Data;
-using ArchitectSample.Protocol.Physical;
+using Chef.Extensions.DbAccess;
 
 namespace ArchitectSample.ConsoleApp
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
 

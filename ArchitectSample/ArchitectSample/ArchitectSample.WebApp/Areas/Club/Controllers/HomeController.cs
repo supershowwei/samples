@@ -1,9 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using ArchitectSample.Protocol.Logic;
-using ArchitectSample.Protocol.Physical;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
+﻿using System.Threading.Tasks;
+using Chef.Extensions.DbAccess;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ArchitectSample.WebApp.Areas.Club.Controllers

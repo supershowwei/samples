@@ -3,6 +3,7 @@ using ArchitectSample.Protocol.Logic;
 using ArchitectSample.Protocol.Model.Data;
 using ArchitectSample.Protocol.Model.Results;
 using ArchitectSample.Protocol.Physical;
+using Chef.Extensions.DbAccess;
 
 namespace ArchitectSample.Logic
 {

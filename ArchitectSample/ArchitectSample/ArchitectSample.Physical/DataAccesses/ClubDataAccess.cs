@@ -4,13 +4,12 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using ArchitectSample.Protocol.Model.Data;
-using ArchitectSample.Protocol.Physical;
+using Chef.Extensions.DbAccess;
 
 namespace ArchitectSample.Physical.DataAccesses
 {
-    public class ClubDataAccess : DataAccessBase<Club>, IDataAccess<Club>
+    public class ClubDataAccess : SqlServerDataAccess<Club>, IDataAccess<Club>
     {
         public ClubDataAccess()
             : base(File.ReadAllLines(@"D:\Labs\ConnectionStrings.txt").First())
