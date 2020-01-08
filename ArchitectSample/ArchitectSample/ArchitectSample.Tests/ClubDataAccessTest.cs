@@ -15,13 +15,23 @@ namespace ArchitectSample.Tests
     public class ClubDataAccessTest
     {
         [TestMethod]
+        public void Test_QueryOne()
+        {
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            var club = clubDataAccess.QueryOne(x => x.Id == 25);
+
+            Assert.AreEqual("鄧偉成", club.Name);
+        }
+
+        [TestMethod]
         public async Task Test_QueryOneAsync()
         {
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
 
             var club = await clubDataAccess.QueryOneAsync(x => x.Id == 25);
 
-            Assert.AreEqual("軌道鞅之股期權常勝軍", club.Name);
+            Assert.AreEqual("鄧偉成", club.Name);
         }
 
         [TestMethod]
@@ -32,7 +42,7 @@ namespace ArchitectSample.Tests
             var club = await clubDataAccess.QueryOneAsync(x => x.Id == 25, selector: x => new { x.Name });
 
             Assert.AreEqual(0, club.Id);
-            Assert.AreEqual("軌道鞅之股期權常勝軍", club.Name);
+            Assert.AreEqual("鄧偉成", club.Name);
         }
 
         [TestMethod]
@@ -43,7 +53,7 @@ namespace ArchitectSample.Tests
             var club = await clubDataAccess.Where(x => x.Id == 25).Select(x => new { x.Name }).QueryOneAsync();
 
             Assert.AreEqual(0, club.Id);
-            Assert.AreEqual("軌道鞅之股期權常勝軍", club.Name);
+            Assert.AreEqual("鄧偉成", club.Name);
         }
 
         [TestMethod]
@@ -56,8 +66,8 @@ namespace ArchitectSample.Tests
             Assert.AreEqual(2, clubs.Count);
             Assert.AreEqual(0, clubs[0].Id);
             Assert.AreEqual(0, clubs[1].Id);
-            Assert.AreEqual("玩股網功能測試", clubs[0].Name);
-            Assert.AreEqual("軌道鞅之股期權常勝軍", clubs[1].Name);
+            Assert.AreEqual("吳淑娟", clubs[0].Name);
+            Assert.AreEqual("鄧偉成", clubs[1].Name);
         }
 
         [TestMethod]
@@ -70,8 +80,8 @@ namespace ArchitectSample.Tests
             Assert.AreEqual(2, clubs.Count);
             Assert.AreEqual(0, clubs[0].Id);
             Assert.AreEqual(0, clubs[1].Id);
-            Assert.AreEqual("玩股網功能測試", clubs[0].Name);
-            Assert.AreEqual("軌道鞅之股期權常勝軍", clubs[1].Name);
+            Assert.AreEqual("吳淑娟", clubs[0].Name);
+            Assert.AreEqual("鄧偉成", clubs[1].Name);
         }
 
         [TestMethod]
@@ -87,8 +97,8 @@ namespace ArchitectSample.Tests
             Assert.AreEqual(2, clubs.Count);
             Assert.AreEqual(0, clubs[0].Id);
             Assert.AreEqual(0, clubs[1].Id);
-            Assert.AreEqual("軌道鞅之股期權常勝軍", clubs[0].Name);
-            Assert.AreEqual("玩股網功能測試", clubs[1].Name);
+            Assert.AreEqual("鄧偉成", clubs[0].Name);
+            Assert.AreEqual("吳淑娟", clubs[1].Name);
         }
 
         [TestMethod]
@@ -104,7 +114,7 @@ namespace ArchitectSample.Tests
 
             Assert.AreEqual(1, clubs.Count);
             Assert.AreEqual(0, clubs[0].Id);
-            Assert.AreEqual("軌道鞅之股期權常勝軍", clubs[0].Name);
+            Assert.AreEqual("鄧偉成", clubs[0].Name);
         }
 
         [TestMethod]
@@ -120,7 +130,7 @@ namespace ArchitectSample.Tests
 
             Assert.AreEqual(1, clubs.Count);
             Assert.AreEqual(9, clubs[0].Id);
-            Assert.AreEqual("短線飆派軍團", clubs[0].Name);
+            Assert.AreEqual("吳美惠", clubs[0].Name);
         }
 
         [TestMethod]
@@ -130,14 +140,14 @@ namespace ArchitectSample.Tests
 
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
 
-            var clubName = "永政交易工作室" + suffix;
+            var clubName = "歐陽邦瑋" + suffix;
 
             await clubDataAccess.UpdateAsync(x => x.Id.Equals(15), () => new Club { Name = clubName });
 
             var club = await clubDataAccess.QueryOneAsync(x => x.Id == 15);
 
             Assert.AreEqual(15, club.Id);
-            Assert.AreEqual("永政交易工作室" + suffix, club.Name);
+            Assert.AreEqual("歐陽邦瑋" + suffix, club.Name);
         }
 
         [TestMethod]
@@ -147,14 +157,14 @@ namespace ArchitectSample.Tests
 
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
 
-            var clubName = "永政交易工作室" + suffix;
+            var clubName = "歐陽邦瑋" + suffix;
 
             await clubDataAccess.Where(x => x.Id.Equals(15)).Set(() => new Club { Name = clubName }).UpdateAsync();
 
             var club = await clubDataAccess.QueryOneAsync(x => x.Id == 15);
 
             Assert.AreEqual(15, club.Id);
-            Assert.AreEqual("永政交易工作室" + suffix, club.Name);
+            Assert.AreEqual("歐陽邦瑋" + suffix, club.Name);
         }
 
         [TestMethod]
@@ -164,9 +174,9 @@ namespace ArchitectSample.Tests
 
             var clubs = new List<Club>
                         {
-                            new Club { Id = 15, Name = "永政交易工作室" + suffix },
-                            new Club { Id = 16, Name = "名諭爸的股票.權證.實戰夢想室" + suffix },
-                            new Club { Id = 19, Name = "何毅的實戰控盤轉折術" + suffix }
+                            new Club { Id = 15, Name = "歐陽邦瑋" + suffix },
+                            new Club { Id = 16, Name = "羅怡君" + suffix },
+                            new Club { Id = 19, Name = "楊翊貴" + suffix }
                         };
 
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
@@ -175,9 +185,9 @@ namespace ArchitectSample.Tests
 
             var actual = await clubDataAccess.QueryAsync(x => new[] { 15, 16, 19 }.Contains(x.Id), selector: x => new { x.Id, x.Name });
 
-            Assert.AreEqual("永政交易工作室" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
-            Assert.AreEqual("名諭爸的股票.權證.實戰夢想室" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
-            Assert.AreEqual("何毅的實戰控盤轉折術" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
+            Assert.AreEqual("歐陽邦瑋" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
+            Assert.AreEqual("羅怡君" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
+            Assert.AreEqual("楊翊貴" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
         }
 
         [TestMethod]
@@ -187,9 +197,9 @@ namespace ArchitectSample.Tests
 
             var clubs = new List<Club>
                         {
-                            new Club { Id = 15, Name = "永政交易工作室" + suffix },
-                            new Club { Id = 16, Name = "名諭爸的股票.權證.實戰夢想室" + suffix },
-                            new Club { Id = 19, Name = "何毅的實戰控盤轉折術" + suffix }
+                            new Club { Id = 15, Name = "歐陽邦瑋" + suffix },
+                            new Club { Id = 16, Name = "羅怡君" + suffix },
+                            new Club { Id = 19, Name = "楊翊貴" + suffix }
                         };
 
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
@@ -198,9 +208,9 @@ namespace ArchitectSample.Tests
 
             var actual = await clubDataAccess.QueryAsync(x => new[] { 15, 16, 19 }.Contains(x.Id), selector: x => new { x.Id, x.Name });
 
-            Assert.AreEqual("永政交易工作室" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
-            Assert.AreEqual("名諭爸的股票.權證.實戰夢想室" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
-            Assert.AreEqual("何毅的實戰控盤轉折術" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
+            Assert.AreEqual("歐陽邦瑋" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
+            Assert.AreEqual("羅怡君" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
+            Assert.AreEqual("楊翊貴" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
         }
 
         [TestMethod]
@@ -584,9 +594,9 @@ namespace ArchitectSample.Tests
 
             var clubs = new List<Club>
                         {
-                            new Club { Id = 15, Name = "永政交易工作室" + suffix },
-                            new Club { Id = 16, Name = "名諭爸的股票.權證.實戰夢想室" + suffix },
-                            new Club { Id = 19, Name = "何毅的實戰控盤轉折術" + suffix }
+                            new Club { Id = 15, Name = "歐陽邦瑋" + suffix },
+                            new Club { Id = 16, Name = "羅怡君" + suffix },
+                            new Club { Id = 19, Name = "楊翊貴" + suffix }
                         };
 
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
@@ -595,9 +605,9 @@ namespace ArchitectSample.Tests
 
             var actual = await clubDataAccess.QueryAsync(x => new[] { 15, 16, 19 }.Contains(x.Id), selector: x => new { x.Id, x.Name });
 
-            Assert.AreEqual("永政交易工作室" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
-            Assert.AreEqual("名諭爸的股票.權證.實戰夢想室" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
-            Assert.AreEqual("何毅的實戰控盤轉折術" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
+            Assert.AreEqual("歐陽邦瑋" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
+            Assert.AreEqual("羅怡君" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
+            Assert.AreEqual("楊翊貴" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
         }
 
         [TestMethod]
@@ -607,9 +617,9 @@ namespace ArchitectSample.Tests
 
             var clubs = new List<Club>
                         {
-                            new Club { Id = 15, Name = "永政交易工作室" + suffix },
-                            new Club { Id = 16, Name = "名諭爸的股票.權證.實戰夢想室" + suffix },
-                            new Club { Id = 19, Name = "何毅的實戰控盤轉折術" + suffix }
+                            new Club { Id = 15, Name = "歐陽邦瑋" + suffix },
+                            new Club { Id = 16, Name = "羅怡君" + suffix },
+                            new Club { Id = 19, Name = "楊翊貴" + suffix }
                         };
 
             IDataAccess<Club> clubDataAccess = new ClubDataAccess();
@@ -618,9 +628,9 @@ namespace ArchitectSample.Tests
 
             var actual = await clubDataAccess.QueryAsync(x => new[] { 15, 16, 19 }.Contains(x.Id), selector: x => new { x.Id, x.Name });
 
-            Assert.AreEqual("永政交易工作室" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
-            Assert.AreEqual("名諭爸的股票.權證.實戰夢想室" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
-            Assert.AreEqual("何毅的實戰控盤轉折術" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
+            Assert.AreEqual("歐陽邦瑋" + suffix, actual.Single(x => x.Id.Equals(15)).Name);
+            Assert.AreEqual("羅怡君" + suffix, actual.Single(x => x.Id.Equals(16)).Name);
+            Assert.AreEqual("楊翊貴" + suffix, actual.Single(x => x.Id.Equals(19)).Name);
         }
 
         [TestMethod]
