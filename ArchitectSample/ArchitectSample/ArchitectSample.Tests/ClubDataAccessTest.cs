@@ -744,5 +744,35 @@ namespace ArchitectSample.Tests
 
             Assert.AreEqual("TestClub989", club.Name);
         }
+
+        [TestMethod]
+        public async Task Test_TransactionScope_Multiple_Query_and_Update()
+        {
+            var clubId = new Random(Guid.NewGuid().GetHashCode()).Next(100, 1000);
+
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+
+            await clubDataAccess.InsertAsync(() => new Club { Id = clubId, Name = "TestClub" });
+
+            Club club;
+            using (var tx = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+                club.Name += "979";
+
+                await clubDataAccess.Where(x => x.Id == default(int))
+                    .Set(() => new Club { Name = default(string) })
+                    .UpdateAsync(new List<Club> { new Club { Id = clubId, Name = club.Name } });
+
+                tx.Complete();
+            }
+
+            club = await clubDataAccess.Where(x => x.Id == clubId).Select(x => new { x.Id, x.Name }).QueryOneAsync();
+
+            await clubDataAccess.DeleteAsync(x => x.Id == clubId);
+
+            Assert.AreEqual("TestClub979", club.Name);
+        }
     }
 }
