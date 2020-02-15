@@ -1,14 +1,13 @@
 param([string] $service = "",
-      [string] $process = "",
-      [string] $ready = "",
-      [string] $running = "")
+    [string] $process = "",
+    [string] $ready = "",
+    [string] $running = "")
 
 if (-Not (Test-Path $ready)) { Exit }
 
 Get-Service $service | Stop-Service
 
-while (Get-Process $process -ErrorAction SilentlyContinue)
-{
+while (Get-Process $process -ErrorAction SilentlyContinue) {
     Start-Sleep -Seconds 1
 }
 
