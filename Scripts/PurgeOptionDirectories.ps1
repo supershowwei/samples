@@ -1,3 +1,12 @@
+function Right {
+    param(
+        [Parameter(ValueFromPipeline)]$str,
+        $length
+    )
+    
+    $str.Substring($str.Length - $length, $length)
+}
+
 $dict = @{
     1  = "F"
     2  = "G"
@@ -15,8 +24,7 @@ $dict = @{
 
 $monthSign = $dict[(Get-Date).AddMonths(-2).Month]
 
-$yearSign = (Get-Date).AddMonths(-2).Year.ToString()
-$yearSign = $yearSign.Substring($yearSign.Length - 1, 1)
+$yearSign = (Get-Date).AddMonths(-2).Year.ToString() | Right -length 1
 
 $pattern = "^WTX[12O45]" + $monthSign + $yearSign + ";"
 
