@@ -28,7 +28,7 @@ $yearSign = (Get-Date).AddMonths(-2).Year.ToString() | Right -length 1
 
 $pattern = "^WTX[12O45]" + $monthSign + $yearSign + ";"
 
-$directories = @(Get-ChildItem "D:\Workspace" -Directory | Where-Object -FilterScript { $_.Name -Match $pattern })
+$directories = @(Get-ChildItem "D:\Workspace" -Directory | Where-Object -FilterScript {$_.Name -Match $pattern})
 
 foreach ($directory in $directories) {
     #$directory.FullName
