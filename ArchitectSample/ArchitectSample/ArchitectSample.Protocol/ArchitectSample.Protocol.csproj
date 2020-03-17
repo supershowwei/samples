@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Logic\IClubService.*.cs">
-      <DependentUpon>Logic\IClubService.cs</DependentUpon>
+    <Compile Update=".\Logic\IClubService.*.cs">
+      <DependentUpon>.\Logic\IClubService.cs</DependentUpon>
     </Compile>
   </ItemGroup>
 
