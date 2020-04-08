@@ -27,7 +27,7 @@ namespace ArchitectSample.Logic
         {
             this.clubRepository = clubRepository;
         }
-
+        
         // Wrong code! Don't use it.
         public async Task<ServiceResult<Club>> GetClub(int clubId)
         {

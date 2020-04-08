@@ -4,13 +4,14 @@ using System.Data;
 using System.Linq.Expressions;
 using ArchitectSample.Protocol.Model.Data;
 using Chef.Extensions.DbAccess;
+using Microsoft.Extensions.Configuration;
 
 namespace ArchitectSample.Physical.DataAccesses
 {
     public class ClubDataAccess : SqlServerDataAccess<Club>
     {
-        public ClubDataAccess()
-            : base(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=Club;Integrated Security=True")
+        public ClubDataAccess(IConfiguration configuration)
+            : base(configuration.GetConnectionString("MSSQLLocalDB"))
         {
         }
 

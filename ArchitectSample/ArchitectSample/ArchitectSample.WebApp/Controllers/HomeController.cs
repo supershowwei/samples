@@ -20,7 +20,8 @@ namespace ArchitectSample.WebApp.Controllers
             this.logger = logger;
             this.lifetimeScope = lifetimeScope;
 
-            this.clubService = lifetimeScope.ResolveNamed<IClubService>("abc");
+            //this.clubService = lifetimeScope.ResolveNamed<IClubService>("abc");
+            this.clubService = lifetimeScope.Resolve<IClubService>();
         }
 
         public IActionResult Index()

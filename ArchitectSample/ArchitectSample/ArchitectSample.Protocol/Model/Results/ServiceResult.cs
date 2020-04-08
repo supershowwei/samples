@@ -48,7 +48,7 @@ namespace ArchitectSample.Protocol.Model.Results
             return new ServiceResult(false, true, int.MinValue, message);
         }
 
-        public static ServiceResult Abnormal(string message, int code)
+        public static ServiceResult Abnormal(string message, int code = -1)
         {
             return new ServiceResult(false, false, code, message);
         }

@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Chef.Extensions.Agility" Version="2.0.2" />
-    <PackageReference Include="Chef.Extensions.DbAccess" Version="1.0.6" />
+    <PackageReference Include="Chef.Extensions.DbAccess" Version="1.0.7" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.0" />
   </ItemGroup>
@@ -22,6 +22,8 @@
     <ProjectReference Include="..\ArchitectSample.Physical\ArchitectSample.Physical.csproj" />
     <ProjectReference Include="..\ArchitectSample.Protocol\ArchitectSample.Protocol.csproj" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 
 
