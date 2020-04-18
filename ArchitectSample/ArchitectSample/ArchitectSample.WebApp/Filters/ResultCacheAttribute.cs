@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -17,10 +18,7 @@ namespace ArchitectSample.WebApp.Filters
 {
     public class ResultCacheAttribute : Attribute, IAsyncActionFilter, IAsyncResultFilter, IOrderedFilter
     {
-        private static readonly ConcurrentDictionary<string, object> Lockers = new ConcurrentDictionary<string, object>();
-
-        private IMemoryCache memoryCache;
-        private string cacheKey;
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> Lockers = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         public int Order { get; }
 
@@ -32,36 +30,56 @@ namespace ArchitectSample.WebApp.Filters
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            this.memoryCache ??= context.HttpContext.RequestServices.GetService<IMemoryCache>();
+            var memoryCache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
 
-            this.cacheKey = this.GenerateCacheKey(context);
+            var cacheKey = this.GenerateCacheKey(context);
 
-            if (this.memoryCache.TryGetValue(this.cacheKey, out IActionResult result))
+            // Share CacheKey
+            context.HttpContext.Items["ResultCacheKey"] = cacheKey;
+
+            if (memoryCache.TryGetValue(cacheKey, out IActionResult result))
             {
                 context.Result = result;
             }
             else
             {
-                await next();
+                var locker = Lockers.GetOrAdd(cacheKey, key => new SemaphoreSlim(1, 1));
+
+                // Share Locker
+                context.HttpContext.Items["ResultCacheLocker"] = locker;
+
+                await locker.WaitAsync();
+                try
+                {
+                    if (memoryCache.TryGetValue(cacheKey, out result))
+                    {
+                        context.Result = result;
+                    }
+                    else
+                    {
+                        await next();
+                    }
+                }
+                catch
+                {
+                    locker.Release();
+                    throw;
+                }
             }
         }
 
         public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
-            switch (context.Result)
+            if (context.HttpContext.Items["ResultCacheLocker"] is SemaphoreSlim locker && locker.CurrentCount == 0)
             {
-                case ViewResult _:
-                case JsonResult _:
-                    {
-                        var locker = Lockers.GetOrAdd(this.cacheKey, key => new object());
-
-                        lock (locker)
-                        {
-                            context.Result = this.OutputAndCacheResult(context);
-                        }
-
-                        break;
-                    }
+                try
+                {
+                    this.OutputAndCacheResult(context);
+                }
+                finally
+                {
+                    locker.Release();
+                }
             }
 
             await next();
@@ -123,10 +141,8 @@ namespace ArchitectSample.WebApp.Filters
             return keyBuilder.ToString();
         }
 
-        private IActionResult OutputAndCacheResult(ResultExecutingContext context)
+        private void OutputAndCacheResult(ResultExecutingContext context)
         {
-            if (this.memoryCache.TryGetValue(this.cacheKey, out IActionResult result)) return result;
-
             if (context.Result is ViewResult viewResult)
             {
                 var executor = (ViewResultExecutor)context.HttpContext.RequestServices.GetService<IActionResultExecutor<ViewResult>>();
@@ -151,10 +167,12 @@ namespace ArchitectSample.WebApp.Filters
 
                     view.RenderAsync(viewContext).GetAwaiter().GetResult();
 
-                    result = new ContentResult
-                             {
-                                 Content = writer.ToString(), ContentType = "text/html; charset=utf-8", StatusCode = viewResult.StatusCode
-                             };
+                    context.Result = new ContentResult
+                    {
+                        Content = writer.ToString(),
+                        ContentType = "text/html; charset=utf-8",
+                        StatusCode = viewResult.StatusCode
+                    };
                 }
             }
             else if (context.Result is JsonResult jsonResult)
@@ -174,28 +192,25 @@ namespace ArchitectSample.WebApp.Filters
 
                 var type = jsonResult.Value?.GetType() ?? typeof(object);
 
-                result = new ContentResult
-                         {
-                             Content = JsonSerializer.Serialize(jsonResult.Value, type, jsonSerializerOptions),
-                             ContentType = "application/json; charset=utf-8",
-                             StatusCode = jsonResult.StatusCode
-                         };
+                context.Result = new ContentResult
+                {
+                    Content = JsonSerializer.Serialize(jsonResult.Value, type, jsonSerializerOptions),
+                    ContentType = "application/json; charset=utf-8",
+                    StatusCode = jsonResult.StatusCode
+                };
             }
-            else
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(context)}.{nameof(context.Result)}");
-            }
+
+            var memoryCache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
+            var cacheKey = context.HttpContext.Items["ResultCacheKey"] as string;
 
             if (this.Duration > 0)
             {
-                this.memoryCache.Set(this.cacheKey, result, TimeSpan.FromSeconds(this.Duration));
+                memoryCache.Set(cacheKey, context.Result, TimeSpan.FromSeconds(this.Duration));
             }
             else
             {
-                this.memoryCache.Set(this.cacheKey, result);
+                memoryCache.Set(cacheKey, context.Result);
             }
-
-            return result;
         }
     }
 }
