@@ -54,6 +54,8 @@ namespace ArchitectSample.WebApp.Filters
                     if (memoryCache.TryGetValue(cacheKey, out result))
                     {
                         context.Result = result;
+
+                        locker.Release();
                     }
                     else
                     {
