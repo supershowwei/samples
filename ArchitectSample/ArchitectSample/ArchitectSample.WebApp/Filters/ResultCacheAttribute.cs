@@ -16,7 +16,7 @@ using Microsoft.Extensions.Options;
 
 namespace ArchitectSample.WebApp.Filters
 {
-    public class ResultCacheAttribute : Attribute, IAsyncActionFilter, IAsyncResultFilter, IOrderedFilter
+    public class ResultCacheAttribute : Attribute, IAsyncActionFilter, IOrderedFilter
     {
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> Lockers = new ConcurrentDictionary<string, SemaphoreSlim>();
 
@@ -34,9 +34,6 @@ namespace ArchitectSample.WebApp.Filters
 
             var cacheKey = this.GenerateCacheKey(context);
 
-            // Share CacheKey
-            context.HttpContext.Items["ResultCacheKey"] = cacheKey;
-
             if (memoryCache.TryGetValue(cacheKey, out IActionResult result))
             {
                 context.Result = result;
@@ -45,46 +42,31 @@ namespace ArchitectSample.WebApp.Filters
             {
                 var locker = Lockers.GetOrAdd(cacheKey, key => new SemaphoreSlim(1, 1));
 
-                // Share Locker
-                context.HttpContext.Items["ResultCacheLocker"] = locker;
-
                 await locker.WaitAsync();
-                try
+
+                if (memoryCache.TryGetValue(cacheKey, out result))
                 {
-                    if (memoryCache.TryGetValue(cacheKey, out result))
+                    context.Result = result;
+                }
+                else
+                {
+                    var executedContext = await next();
+
+                    if (executedContext.Exception == null && executedContext.Result != null && !executedContext.Canceled)
                     {
-                        context.Result = result;
-
-                        locker.Release();
+                        try
+                        {
+                            this.OutputAndCacheResult(executedContext, cacheKey);
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
                     }
-                    else
-                    {
-                        await next();
-                    }
                 }
-                catch
-                {
-                    locker.Release();
-                    throw;
-                }
-            }
-        }
 
-        public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
-        {
-            if (context.HttpContext.Items["ResultCacheLocker"] is SemaphoreSlim locker && locker.CurrentCount == 0)
-            {
-                try
-                {
-                    this.OutputAndCacheResult(context);
-                }
-                finally
-                {
-                    locker.Release();
-                }
+                locker.Release();
             }
-
-            await next();
         }
 
         private string GenerateCacheKey(ActionExecutingContext context)
@@ -143,7 +125,7 @@ namespace ArchitectSample.WebApp.Filters
             return keyBuilder.ToString();
         }
 
-        private void OutputAndCacheResult(ResultExecutingContext context)
+        private void OutputAndCacheResult(ActionExecutedContext context, string cacheKey)
         {
             if (context.Result is ViewResult viewResult)
             {
@@ -203,7 +185,6 @@ namespace ArchitectSample.WebApp.Filters
             }
 
             var memoryCache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
-            var cacheKey = context.HttpContext.Items["ResultCacheKey"] as string;
 
             if (this.Duration > 0)
             {

@@ -10,7 +10,7 @@ namespace ArchitectSample.ConsoleApp
     {
         private static async Task Main(string[] args)
         {
-            IDataAccess<Club> clubDataAccess = new ClubDataAccess();
+            IDataAccess<Club> clubDataAccess = new ClubDataAccess(null);
 
             var club = await clubDataAccess.QueryOneAsync(x => x.Id == 25);
 
