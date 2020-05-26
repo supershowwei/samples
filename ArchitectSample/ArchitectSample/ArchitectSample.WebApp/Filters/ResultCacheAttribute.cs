@@ -46,6 +46,8 @@ namespace ArchitectSample.WebApp.Filters
 
                 if (memoryCache.TryGetValue(cacheKey, out result))
                 {
+                    locker.Release();
+
                     context.Result = result;
                 }
                 else
@@ -63,9 +65,9 @@ namespace ArchitectSample.WebApp.Filters
                             // ignored
                         }
                     }
-                }
 
-                locker.Release();
+                    locker.Release();
+                }
             }
         }
 
