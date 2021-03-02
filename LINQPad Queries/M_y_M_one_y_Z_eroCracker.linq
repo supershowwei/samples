@@ -7,7 +7,10 @@
 
 // 從 13.4 版開始，會驗證信箱序號，先在登入畫面輸入使用者代號 2OLIOXOI，然後按 F12，停止信箱序號驗證。
 
-M_y_M_one_y_Z_eroCracker.GenerateLicenseKey("johnny@wantgoo.com").Dump();
+M_y_M_one_y_Z_eroCracker.GenerateLicenseKey("wnt78772@eoopy.com").Dump();
+
+// wnt78772@eoopy.com
+// FXUCVVW^PMMELMFFQKJBGIGRNSETNFKSKGCHEHLCHNCEFLJJDDCBDYYYBYJIIQIUVVAWGRSWRSDHVJKPYZYSSSBSHONUW
 
 }
 public class M_y_M_one_y_Z_eroCracker
