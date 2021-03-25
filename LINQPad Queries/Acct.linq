@@ -5,7 +5,6 @@
   <Namespace>Microsoft.VisualBasic.CompilerServices</Namespace>
 </Query>
 
-// oyx68990@cuoly.com => oyx68990acctcuoly.com
 var email = "oyx68990@cuoly.com";
 var encodedEmail = email.Replace("@", "acct");
 
@@ -85,4 +84,3 @@ result.Length.Dump();
 result.Dump();
 
 d(result).Dump();
-
