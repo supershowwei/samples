@@ -31,8 +31,6 @@ ColumnName      : Name of the column of the object that the user/role is assigne
 */
 
 --List all access provisioned to a sql user or windows user/group directly
-USE [master]
-
 SELECT
     [UserName] = CASE princ.[type]
                     WHEN 'S' THEN princ.[name]
