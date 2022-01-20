@@ -1,14 +1,15 @@
 <Query Kind="Program">
   <Connection>
-    <ID>36051f11-dc98-402d-85c0-e1d32784a9f2</ID>
+    <ID>95e26ab1-da32-4de4-ad6e-85e06a82e1e2</ID>
     <Persist>true</Persist>
-    <Server>cartierloveisalltw.database.windows.net</Server>
+    <Server>elctaiwan.database.windows.net</Server>
     <SqlSecurity>true</SqlSecurity>
-    <Database>cartierloveisalltw</Database>
-    <UserName>sa_cartierloveisalltw</UserName>
-    <Password>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9DvsGbqzSU2DYYUe13mP6AAAAAACAAAAAAAQZgAAAAEAACAAAAByIvw0WqyvmcsIjlBbtwHb9dDYbIxxY1bGed3KmjM3JgAAAAAOgAAAAAIAACAAAADwZdsM1WPP3C9Tkujy/U2MSNYdUx2XK/V7POTDgJf0XiAAAAAlHCcDgLnytTaDMrsijfilFY9n5zO31XfpaebBzdgcgkAAAADy08TCWl8Kpwnl1bDO10JrAsc871h8zd6rK1YgtWDwsTQYOuEuk1KvpaIgilOpSHmJg1X2NXJKhzyulL621pSz</Password>
-    <DbVersion>Azure</DbVersion>
     <NoPluralization>true</NoPluralization>
+    <UserName>sa_elctaiwan</UserName>
+    <Password>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9DvsGbqzSU2DYYUe13mP6AAAAAACAAAAAAAQZgAAAAEAACAAAAAlCvdRILDIQMXbXAZvpvZoRMRwDnPIJvOZua9ZeNmD5wAAAAAOgAAAAAIAACAAAABp0bfmhhr5bKgaJKcR+G76yrTQNyNLgG+mOx3uV5IZzCAAAAChlzXCG7ubCQelQjB5ih/gPzaPRC93up1NeSCmTxGZm0AAAACLPVHhWvP0z2bBOSBm3F75vA/8BcyY4kd6f9r+sbW0v6u+abtslywkX/jqt+IjFS7/BiaVPWlG66EeE12T/RgV</Password>
+    <DbVersion>Azure</DbVersion>
+    <Database>elctaiwan</Database>
+    <ShowServer>true</ShowServer>
   </Connection>
   <NuGetReference>Chef.Extensions.Agility</NuGetReference>
   <NuGetReference>Newtonsoft.Json</NuGetReference>
@@ -16,7 +17,10 @@
 
 void Main()
 {
-    this.Connection.DumpClass("SELECT TOP 1 * FROM MyTable WITH (NOLOCK)", "MyClass").Dump();
+    var tableName = "SeniorityAward";
+    var className = "SeniorityAward";
+
+    this.Connection.DumpClass($"SELECT TOP 1 * FROM {tableName} WITH (NOLOCK)", className).Dump();
 }
 
 // Define other methods and classes here
