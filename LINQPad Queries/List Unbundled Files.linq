@@ -9,4 +9,8 @@ files = files.Concat(Directory.GetFiles(Path.Combine(wwwroot, "js"), "*.min.*", 
 
 var bundleConfig = File.ReadAllText(bundleConfigFile);
 
-files.Where(f => !bundleConfig.Contains(Path.GetFileName(f))).Dump();
+var unbundledFiles = files.Where(f => !new[] { "bot-detection.min.js", "signature.min.js" }.Any(x => f.Contains(x)) && !bundleConfig.Contains(Path.GetFileName(f))).ToList();
+
+unbundledFiles.Dump();
+
+//unbundledFiles.ForEach(f => File.Delete(f));
