@@ -1,6 +1,6 @@
 SELECT
     r.scheduler_id AS 排程器識別碼
-   ,status AS 要求的狀態
+   ,r.status AS 要求的狀態
    ,r.session_id AS SPID
    ,r.blocking_session_id AS BlkBy
    ,SUBSTRING(
@@ -18,11 +18,16 @@ SELECT
    ,r.writes AS [寫入數]
    ,r.logical_reads AS [邏輯讀取數]
    ,d.name AS [資料庫名稱]
+   ,s.[host_name]
+   ,s.[program_name]
+   ,s.host_process_id
    ,q.text /* 完整的 T-SQL 指令碼 */
 FROM sys.dm_exec_requests r
+INNER JOIN sys.dm_exec_sessions s
+    ON r.session_id = s.session_id
 CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS q
 LEFT JOIN sys.databases d
     ON (r.database_id = d.database_id)
 WHERE r.session_id > 50
-AND r.session_id <> @@spid
+    AND r.session_id <> @@spid
 ORDER BY r.cpu_time DESC
