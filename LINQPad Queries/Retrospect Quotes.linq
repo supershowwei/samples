@@ -21,7 +21,7 @@ var strategy = default(Strategy);
 var tsmc499 = default(Quote);
 var profits = new List<Profit>();
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Take(22))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(1).Take(2))
 {
 	var topFivePiecesFile = Path.ChangeExtension(file, "topfive");
 
@@ -38,6 +38,9 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 
 		GenerateBigTopPieceJournal(topFivePieces);
 	}
+    
+    bigOrderTopPieceJournal.Dump();
+    return;
 
 	dailyCandlestick = default(Candlestick);
 	minuteCandlesticks = new List<Candlestick>();
@@ -79,7 +82,7 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 			}
 		}
 
-		if (bigOrderTopPiece != null)
+		if (bigOrderTopPiece != null && quote.Time >= bigOrderTopPiece.Time.StopMinute().AddMinutes(1))
 		{
 			if (bigOrderTopPiece.TopPiece.Side == OrderSide.Buy && quote.Price <= bigOrderTopPiece.TopPiece.Price)
 			{
@@ -233,10 +236,12 @@ void GenerateBigTopPieceJournal(TopFivePieces topFivePieces)
 		{
 			topPiece.Delta = prevTopPiece.Side == topPiece.Side
 								 ? topPiece.Volume - prevTopPiece.Volume
-								 : topPiece.Volume >= 100
-								 	? topPiece.Volume + prevTopPiece.Volume
-									: 0;
+								 : topPiece.Volume + prevTopPiece.Volume;
 		}
+        else
+        {
+            topPiece.Delta = topPiece.Volume;
+        }
 
 		if (topPiece.Delta >= 100)
 		{
