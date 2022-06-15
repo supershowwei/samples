@@ -3,14 +3,17 @@
   <NuGetReference>CsvHelper</NuGetReference>
   <NuGetReference>Newtonsoft.Json</NuGetReference>
   <Namespace>Chef.Extensions.DateTime</Namespace>
+  <Namespace>Chef.Extensions.Long</Namespace>
   <Namespace>CsvHelper</Namespace>
   <Namespace>Newtonsoft.Json</Namespace>
+  <Namespace>System.ComponentModel</Namespace>
   <Namespace>System.Globalization</Namespace>
 </Query>
 
 var dir = @"D:\Applications\MoneyStudio\Quotes";
 var dailyCandlestick = default(Candlestick);
 var minuteCandlesticks = default(List<Candlestick>);
+var topBidPieces = default(Dictionary<decimal, TopPiece>);
 var mainForce = default(MainForce);
 var strategy = default(Strategy);
 var tsmc499 = default(Quote);
@@ -18,12 +21,19 @@ var profits = new List<Profit>();
 
 foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)))
 {
+    var topFivePiecesFile = Path.ChangeExtension(file, "topfive");
+
+    if (!File.Exists(topFivePiecesFile)) break;
+
+    // 列出𡘙委價出現消失的歷程
+    var topFivePiecesLines = File.ReadAllLines(topFivePiecesFile);
+
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
+    topBidPieces = default(Dictionary<decimal, TopPiece>);
     mainForce = new MainForce();
     strategy = new Strategy();
     tsmc499 = default(Quote);
-
     foreach (var line in File.ReadAllLines(file))
     {
         if (line.StartsWith("{\"Symbol\":\"2330") && tsmc499 == null)
@@ -349,3 +359,68 @@ public class MainForce
     public long? Volume { get; set; }
     public decimal? High { get; set; }
     public decimal? Low { get; set; }
+}
+public enum OrderSide
+{
+    [Description("買")]
+    Buy,
+
+    [Description("賣")]
+    Sell
+}
+public class TopPiece
+{
+    public TopPiece(OrderSide side, decimal price, long volume)
+    {
+        this.Side = side;
+        this.Price = price;
+        this.Volume = volume;
+    }
+
+    public OrderSide Side { get; }
+
+    public decimal Price { get; }
+
+    public long Volume { get; }
+
+    public long Delta { get; set; }
+}
+public class TopFivePieces
+{
+    private static readonly Regex PieceRegex = new Regex(@"([\d\-\.]+):([\d\-\.]+)", RegexOptions.Compiled);
+
+    public TopFivePieces(string symbol, DateTime time, IReadOnlyList<TopPiece> topBidPieces, IReadOnlyList<TopPiece> topAskPieces)
+    {
+        this.Symbol = symbol;
+        this.Time = time;
+        this.TopBidPieces = topBidPieces;
+        this.TopAskPieces = topAskPieces;
+    }
+
+    public string Symbol { get; }
+
+    public DateTime Time { get; }
+
+    public IReadOnlyList<TopPiece> TopBidPieces { get; }
+
+    public IReadOnlyList<TopPiece> TopAskPieces { get; }
+
+    public static TopFivePieces Deserialize(string value)
+    {
+        var arr = value.Split('_');
+
+        var symbol = arr[0];
+        var time = long.Parse(arr[1]).ToDateTime();
+
+        var topBidPieces = PieceRegex.Matches(arr[2])
+            .OfType<Match>()
+            .Select(m => new TopPiece(OrderSide.Buy, decimal.Parse(m.Groups[1].Value), long.Parse(m.Groups[2].Value)))
+            .ToList();
+
+        var topAskPieces = PieceRegex.Matches(arr[3])
+            .OfType<Match>()
+            .Select(m => new TopPiece(OrderSide.Sell, decimal.Parse(m.Groups[1].Value), long.Parse(m.Groups[2].Value)))
+            .ToList();
+
+        return new TopFivePieces(symbol, time, topBidPieces, topAskPieces);
+    }
