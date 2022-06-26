@@ -21,26 +21,26 @@ var mainForce = default(MainForce);
 var denseDeal = default(DenseDeal);
 var denseDealCandlestick = default(Candlestick);
 var strategy = default(Strategy);
-var tsmc50 = default(Quote);
+var tsmc499 = default(Quote);
 var profits = new List<Profit>();
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(3).Take(1))
 {
     var topFivePiecesFile = Path.ChangeExtension(file, "topfive");
 
     if (!File.Exists(topFivePiecesFile)) break;
 
     // 列出𡘙委價出現消失的歷程
-    topPieces = new Dictionary<decimal, TopPiece>();
-    bigOrderTopPieces = new Dictionary<decimal, TopPiece>();
-    bigOrderTopPieceJournal = new Queue<UserQuery.BigOrderTopPieceHauntArgs>();
-
-    foreach (var topFivePieceLine in File.ReadAllLines(topFivePiecesFile))
-    {
-        var topFivePieces = TopFivePieces.Deserialize(topFivePieceLine);
-
-        GenerateBigTopPieceJournal(topFivePieces);
-    }
+//    topPieces = new Dictionary<decimal, TopPiece>();
+//    bigOrderTopPieces = new Dictionary<decimal, TopPiece>();
+//    bigOrderTopPieceJournal = new Queue<UserQuery.BigOrderTopPieceHauntArgs>();
+//
+//    foreach (var topFivePieceLine in File.ReadAllLines(topFivePiecesFile))
+//    {
+//        var topFivePieces = TopFivePieces.Deserialize(topFivePieceLine);
+//
+//        GenerateBigTopPieceJournal(topFivePieces);
+//    }
 
     //bigOrderTopPieceJournal.Dump();
     //return;
@@ -52,17 +52,17 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
     denseDeal = default(DenseDeal);
     denseDealCandlestick = default(Candlestick);
     strategy = new Strategy();
-    tsmc50 = default(Quote);
+    tsmc499 = default(Quote);
 
     //var bigOrderTopPiece = default(BigOrderTopPieceHauntArgs);
 
     foreach (var quoteLine in File.ReadAllLines(file))
     {
-        if (quoteLine.StartsWith("{\"Symbol\":\"2330") && tsmc50 == null)
+        if (quoteLine.StartsWith("{\"Symbol\":\"2330") && tsmc499 == null)
         {
             var tsmcQuote = JsonConvert.DeserializeObject<Quote>(quoteLine);
 
-            if (tsmcQuote.Volume >= 50) tsmc50 = tsmcQuote;
+            if (tsmcQuote.Volume >= 499) tsmc499 = tsmcQuote;
 
             continue;
         }
@@ -112,15 +112,17 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         {
             var minuteCandlestick = minuteCandlesticks.Last();
 
-            if (denseDealCandlestick == null && denseDeal != null)
+            if ((denseDealCandlestick == null || denseDealCandlestick.Time != minuteCandlestick.Time) && denseDeal != null)
             {
                 if (minuteCandlestick.High == dailyCandlestick.High)
                 {
-                    denseDealCandlestick = new Candlestick { Low = minuteCandlestick.Low };
+                    denseDealCandlestick = new Candlestick { Time = minuteCandlestick.Time, Low = minuteCandlestick.Low, Close = minuteCandlestick.High };
+                    strategy.TurningPrice = null;
                 }
                 else if (minuteCandlestick.Low == dailyCandlestick.Low)
                 {
-                    denseDealCandlestick = new Candlestick { High = minuteCandlestick.High };
+                    denseDealCandlestick = new Candlestick { Time = minuteCandlestick.Time, High = minuteCandlestick.High, Close = minuteCandlestick.Low };
+                    strategy.TurningPrice = null;
                 }
             }
         }
@@ -145,12 +147,12 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         {
             if (denseDealCandlestick.Low > 0 && quote.Price < denseDealCandlestick.Low)
             {
-                strategy.Go(quote.Time, -quote.Price);
+                strategy.TurnBack(quote.Time, -(denseDealCandlestick.Close / 100000));
                 denseDealCandlestick = null;
             }
             else if (denseDealCandlestick.High > 0 && quote.Price > denseDealCandlestick.High)
             {
-                strategy.Go(quote.Time, quote.Price);
+                strategy.TurnBack(quote.Time, (denseDealCandlestick.Close / 100000));
                 denseDealCandlestick = null;
             }
         }
@@ -160,6 +162,10 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
             strategy.Gain(quote.Price);
         }
         else if (!strategy.OrderPrice.HasValue)
+        {
+            strategy.Match(quote.Time, quote.Price);
+        }
+        else if (!strategy.TurningPrice.HasValue)
         {
             strategy.Match(quote.Time, quote.Price);
         }
@@ -365,6 +371,7 @@ public class Strategy
 
     public DateTime Time { get; set; }
     public decimal? OrderPrice { get; set; }
+    public decimal? TurningPrice { get; set; }
     public decimal? Deal { get; set; }
     public decimal? StopLoss { get; set; }
     public decimal? MaxStopLoss { get; set; }
@@ -373,10 +380,17 @@ public class Strategy
     public decimal? StopProfit2 { get; set; }
     public decimal Profit { get; set; }
     public List<Profit> Profits { get; set; }
+    
+    public void TurnBack(DateTime time, decimal price)
+    {
+        if (this.Deal.HasValue) return;
+
+        this.Time = time;
+        this.TurningPrice = price;
+    }
 
     public void Order(DateTime time, decimal price)
     {
-        if (this.OrderPrice.HasValue) return;
         if (this.Deal.HasValue) return;
 
         this.Time = time;
@@ -385,12 +399,40 @@ public class Strategy
     
     public void Match(DateTime time, decimal price)
     {
-        if (!this.OrderPrice.HasValue) return;
         if (this.Time > time) return;
         
-        if (this.OrderPrice.Value < (price * Math.Sign(this.OrderPrice.Value)))
+        if (this.OrderPrice.HasValue)
         {
-            this.Go(time, this.OrderPrice.Value);
+            var matchedPrice = price * Math.Sign(this.OrderPrice.Value);
+            
+            if (matchedPrice < this.OrderPrice.Value)
+            {
+                this.Go(time, this.OrderPrice.Value);
+            }
+        }
+            
+        if (this.TurningPrice.HasValue)
+        {
+            var matchedPrice = price * Math.Sign(this.TurningPrice.Value);
+            
+            if (Math.Abs(this.TurningPrice.Value) < 1)
+            {
+                if (matchedPrice <= (this.TurningPrice.Value * 100000))
+                {
+                    this.TurningPrice = this.TurningPrice.Value * 100000;
+                }
+            }
+            else
+            {
+                if (matchedPrice < this.TurningPrice.Value)
+                {
+                    this.TurningPrice = matchedPrice;
+                }
+                else if ((matchedPrice - this.TurningPrice.Value) >= 10)
+                {
+                    this.Go(time, matchedPrice);
+                }
+            }
         }
     }
 
@@ -401,30 +443,30 @@ public class Strategy
         this.Time = time;
         this.Deal = price + 2;
 
-        this.StopLoss = 5;
+        this.StopLoss = 10;
 
         // 躲牆後
-        //if (this.StopLoss.HasValue)
-        //{
-        //    switch ((this.Deal.Value - this.StopLoss.Value) % 10)
-        //    {
-        //        case 0:
-        //        case 5:
-        //        case -5:
-        //            this.StopLoss += 1;
-        //            break;
-        //        case 1:
-        //        case -9:
-        //        case 6:
-        //        case -4:
-        //            this.StopLoss += 2;
-        //            break;
-        //    }
-        //}
+        if (this.StopLoss.HasValue)
+        {
+            switch ((this.Deal.Value - this.StopLoss.Value) % 10)
+            {
+                case 0:
+                case 5:
+                case -5:
+                    this.StopLoss += 1;
+                    break;
+                case 1:
+                case -9:
+                case 6:
+                case -4:
+                    this.StopLoss += 2;
+                    break;
+            }
+        }
 
         //this.Breakeven = 10;
-        this.StopProfit1 = 5;
-        //this.StopProfit2 = 62;
+        this.StopProfit1 = 12;
+        this.StopProfit2 = 52;
         this.MaxStopLoss = 0;
 
         Console.Write($"{time:yyyy-MM-dd HH:mm:ss}, {(price > 0 ? "多" : "空")}, 進場={this.Deal.Value}");
@@ -510,6 +552,7 @@ public class Strategy
     public void Stop(string result)
     {
         this.OrderPrice = default;
+        this.TurningPrice = default;
         this.Deal = default;
         this.StopLoss = default;
         this.Breakeven = default;
