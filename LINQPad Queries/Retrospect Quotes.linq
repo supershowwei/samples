@@ -13,15 +13,9 @@
 var dir = @"D:\Applications\MoneyStudio\Quotes";
 var dailyCandlestick = default(Candlestick);
 var minuteCandlesticks = default(List<Candlestick>);
-var topPieces = default(Dictionary<decimal, TopPiece>);
-var bigOrderTopPieces = default(Dictionary<decimal, TopPiece>);
-var bigOrderTopPieceJournal = default(Queue<BigOrderTopPieceHauntArgs>);
-var mainForceQuotes = default(LinkedList<Quote>);
 var mainForce = default(MainForce);
-var denseDeal = default(DenseDeal);
-var denseDealCandlestick = default(Candlestick);
+var mainForceQuotes = default(LinkedList<Quote>);
 var strategy = default(Strategy);
-var tsmc499 = default(Quote);
 var profits = new List<Profit>();
 
 foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(3).Take(1))
@@ -30,80 +24,18 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 
     if (!File.Exists(topFivePiecesFile)) break;
 
-    // 列出𡘙委價出現消失的歷程
-//    topPieces = new Dictionary<decimal, TopPiece>();
-//    bigOrderTopPieces = new Dictionary<decimal, TopPiece>();
-//    bigOrderTopPieceJournal = new Queue<UserQuery.BigOrderTopPieceHauntArgs>();
-//
-//    foreach (var topFivePieceLine in File.ReadAllLines(topFivePiecesFile))
-//    {
-//        var topFivePieces = TopFivePieces.Deserialize(topFivePieceLine);
-//
-//        GenerateBigTopPieceJournal(topFivePieces);
-//    }
-
-    //bigOrderTopPieceJournal.Dump();
-    //return;
-
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
-    mainForceQuotes = new LinkedList<Quote>();
     mainForce = new MainForce();
-    denseDeal = default(DenseDeal);
-    denseDealCandlestick = default(Candlestick);
+    mainForceQuotes = new LinkedList<Quote>();
     strategy = new Strategy();
-    tsmc499 = default(Quote);
-
-    //var bigOrderTopPiece = default(BigOrderTopPieceHauntArgs);
 
     foreach (var quoteLine in File.ReadAllLines(file))
     {
-        if (quoteLine.StartsWith("{\"Symbol\":\"2330") && tsmc499 == null)
-        {
-            var tsmcQuote = JsonConvert.DeserializeObject<Quote>(quoteLine);
-
-            if (tsmcQuote.Volume >= 499) tsmc499 = tsmcQuote;
-
-            continue;
-        }
-
         // 非期貨不抓
         if (!quoteLine.StartsWith("{\"Symbol\":\"TXF")) continue;
 
         var quote = JsonConvert.DeserializeObject<Quote>(quoteLine);
-
-        // 處理𡘙委價
-        //		var nextBigOrderTopPiece = bigOrderTopPieceJournal.Count > 0 ? bigOrderTopPieceJournal.Peek() : default(BigOrderTopPieceHauntArgs);
-        //
-        //		if (nextBigOrderTopPiece != null && quote.Time >= nextBigOrderTopPiece.Time)
-        //		{
-        //			if (nextBigOrderTopPiece.IsVisible)
-        //			{
-        //				bigOrderTopPiece = bigOrderTopPieceJournal.Dequeue();
-        //			}
-        //			else
-        //			{
-        //				bigOrderTopPieceJournal.Dequeue();
-        //				bigOrderTopPiece = null;
-        //			}
-        //		}
-        //
-        //		if (bigOrderTopPiece != null && quote.Time >= bigOrderTopPiece.Time.StopMinute().AddMinutes(1))
-        //		{
-        //            var prevMinCandlestick = minuteCandlesticks[minuteCandlesticks.Count - 2];
-        //            var minuteCandlestick = minuteCandlesticks.Last();
-        //            
-        //			if (bigOrderTopPiece.TopPiece.Side == OrderSide.Buy && quote.Price <= bigOrderTopPiece.TopPiece.Price && ((prevMinCandlestick.Low == dailyCandlestick.Low || minuteCandlestick.Low == dailyCandlestick.Low) && minuteCandlestick.Close > minuteCandlestick.Open))
-        //			{
-        //				strategy.Go(quote.Time, quote.Price);
-        //				bigOrderTopPiece= null;
-        //			}
-        //			else if (bigOrderTopPiece.TopPiece.Side == OrderSide.Sell && quote.Price >= bigOrderTopPiece.TopPiece.Price && ((prevMinCandlestick.High == dailyCandlestick.High || minuteCandlestick.High == dailyCandlestick.High) && minuteCandlestick.Close < minuteCandlestick.Open))
-        //			{
-        //				strategy.Go(quote.Time, -quote.Price);
-        //				bigOrderTopPiece= null;
-        //			}
-        //		}
 
         var minuteTime = quote.Time.StopMinute().AddMinutes(1);
 
@@ -111,50 +43,6 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         if (minuteCandlesticks.Count > 1 && minuteCandlesticks.Last().Time != minuteTime)
         {
             var minuteCandlestick = minuteCandlesticks.Last();
-
-            if ((denseDealCandlestick == null || denseDealCandlestick.Time != minuteCandlestick.Time) && denseDeal != null)
-            {
-                if (minuteCandlestick.High == dailyCandlestick.High)
-                {
-                    denseDealCandlestick = new Candlestick { Time = minuteCandlestick.Time, Low = minuteCandlestick.Low, Close = minuteCandlestick.High };
-                    strategy.TurningPrice = null;
-                }
-                else if (minuteCandlestick.Low == dailyCandlestick.Low)
-                {
-                    denseDealCandlestick = new Candlestick { Time = minuteCandlestick.Time, High = minuteCandlestick.High, Close = minuteCandlestick.Low };
-                    strategy.TurningPrice = null;
-                }
-            }
-        }
-
-        // 台積電 499
-//        if (tsmc50 != null)
-//        {
-//            if (tsmc50.AskVolume > 0)
-//            {
-//                strategy.Go(quote.Time, quote.Price);
-//            }
-//            else if (tsmc50.BidVolume > 0)
-//            {
-//                strategy.Go(quote.Time, -quote.Price);
-//            }
-//
-//            tsmc50 = default(Quote);
-//        }
-
-        // 軍糧丸
-        if (denseDealCandlestick != null)
-        {
-            if (denseDealCandlestick.Low > 0 && quote.Price < denseDealCandlestick.Low)
-            {
-                strategy.TurnBack(quote.Time, -(denseDealCandlestick.Close / 100000));
-                denseDealCandlestick = null;
-            }
-            else if (denseDealCandlestick.High > 0 && quote.Price > denseDealCandlestick.High)
-            {
-                strategy.TurnBack(quote.Time, (denseDealCandlestick.Close / 100000));
-                denseDealCandlestick = null;
-            }
         }
 
         if (strategy.Deal.HasValue)
@@ -173,7 +61,6 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         UpdateDailyCandlestick(quote);
         UpdateMinuteCandlesticks(minuteTime, quote);
         UpdateMainForce(minuteTime, quote);
-        UpdateDenseDeal(minuteTime, quote);
 
         // 當沖出場
         if (quote.Time >= quote.Time.Date.Add(TimeSpan.Parse("13:14:0"))) break;
@@ -263,101 +150,6 @@ void UpdateMainForce(DateTime time, Quote quote)
             mainForce.Price = quote.Price;
             mainForce.Volume = quote.Volume;
         }
-    }
-}
-
-void UpdateDenseDeal(DateTime time, Quote quote)
-{
-    if (minuteCandlesticks.Count < 7) return;
-
-    if (denseDeal == null || denseDeal.Time != time)
-    {
-        var keepTime = quote.Time.AddMinutes(-1);
-
-        while (mainForceQuotes.First?.Value.Time < denseDeal?.Time || mainForceQuotes.First?.Value.Time <= keepTime)
-        {
-            mainForceQuotes.RemoveFirst();
-        }
-
-        denseDeal = default(DenseDeal);
-    }
-
-    var volume = mainForceQuotes.Sum(x => x.Volume);
-    var count = volume / 30d;
-
-    if (count < 3) return;
-
-    if (denseDeal == null)
-    {
-        denseDeal = new DenseDeal { Time = time, Volume = volume };
-    }
-}
-
-void GenerateBigTopPieceJournal(TopFivePieces topFivePieces)
-{
-    for (var i = 0; i < 5; i++)
-    {
-        if (i < topFivePieces.TopBidPieces.Count)
-        {
-            DetectBigOrderTopPiece(topFivePieces.TopBidPieces[i], topFivePieces.Time);
-        }
-
-        if (i < topFivePieces.TopAskPieces.Count)
-        {
-            DetectBigOrderTopPiece(topFivePieces.TopAskPieces[i], topFivePieces.Time);
-        }
-    }
-
-    TryRemoveBigOrderTopPiece(topFivePieces);
-
-    void DetectBigOrderTopPiece(TopPiece topPiece, DateTime time)
-    {
-        if (topPieces.TryGetValue(topPiece.Price, out var prevTopPiece))
-        {
-            topPiece.Delta = prevTopPiece.Side == topPiece.Side
-                                 ? topPiece.Volume - prevTopPiece.Volume
-                                 : topPiece.Volume + prevTopPiece.Volume;
-        }
-        else
-        {
-            topPiece.Delta = topPiece.Volume;
-        }
-
-        if (topPiece.Delta >= 100)
-        {
-            bigOrderTopPieces[topPiece.Price] = topPiece;
-
-            bigOrderTopPieceJournal.Enqueue(new BigOrderTopPieceHauntArgs(time, new TopPiece(topPiece.Side, topPiece.Price, topPiece.Volume) { Delta = topPiece.Delta }, true));
-        }
-
-        topPieces[topPiece.Price] = topPiece;
-    }
-}
-
-void TryRemoveBigOrderTopPiece(TopFivePieces topFivePieces)
-{
-    var lastTopBidPieces = topFivePieces.TopBidPieces.Last();
-    var lastTopAskPieces = topFivePieces.TopAskPieces.Last();
-
-    foreach (var bigOrderPrice in bigOrderTopPieces.Keys.ToArray())
-    {
-        var bigOrderTopPiece = bigOrderTopPieces[bigOrderPrice];
-
-        if (bigOrderTopPiece.Side == OrderSide.Buy && lastTopAskPieces.Price < bigOrderTopPiece.Price)
-        {
-            Remove(bigOrderTopPiece, topFivePieces.Time);
-        }
-        else if (bigOrderTopPiece.Side == OrderSide.Sell && lastTopBidPieces.Price > bigOrderTopPiece.Price)
-        {
-            Remove(bigOrderTopPiece, topFivePieces.Time);
-        }
-    }
-
-    void Remove(TopPiece bigOrderTopPiece, DateTime time)
-    {
-        bigOrderTopPieces.Remove(bigOrderTopPiece.Price);
-
-        bigOrderTopPieceJournal.Enqueue(new BigOrderTopPieceHauntArgs(time, new TopPiece(bigOrderTopPiece.Side, bigOrderTopPiece.Price, bigOrderTopPiece.Volume) { Delta = bigOrderTopPiece.Delta }, false));
     }
 }
 
@@ -620,6 +412,7 @@ public class MainForce
     public DateTime Time { get; set; }
     public decimal? Price { get; set; }
     public long? Volume { get; set; }
+    public decimal? AveragePrice { get; set; }
 }
 public class DenseDeal
 {
