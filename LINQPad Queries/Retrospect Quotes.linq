@@ -24,6 +24,8 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 
     if (!File.Exists(topFivePiecesFile)) break;
 
+    var topFivePieces = TopFivePieces.Deserialize(File.ReadAllLines(topFivePiecesFile).First());
+
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
     mainForce = new MainForce();
@@ -36,6 +38,9 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         if (!quoteLine.StartsWith("{\"Symbol\":\"TXF")) continue;
 
         var quote = JsonConvert.DeserializeObject<Quote>(quoteLine);
+        
+        // 開市大吉
+        
 
         var minuteTime = quote.Time.StopMinute().AddMinutes(1);
 
@@ -172,7 +177,7 @@ public class Strategy
     public decimal? StopProfit2 { get; set; }
     public decimal Profit { get; set; }
     public List<Profit> Profits { get; set; }
-    
+
     public void TurnBack(DateTime time, decimal price)
     {
         if (this.Deal.HasValue) return;
@@ -188,25 +193,25 @@ public class Strategy
         this.Time = time;
         this.OrderPrice = price;
     }
-    
+
     public void Match(DateTime time, decimal price)
     {
         if (this.Time > time) return;
-        
+
         if (this.OrderPrice.HasValue)
         {
             var matchedPrice = price * Math.Sign(this.OrderPrice.Value);
-            
+
             if (matchedPrice < this.OrderPrice.Value)
             {
                 this.Go(time, this.OrderPrice.Value);
             }
         }
-            
+
         if (this.TurningPrice.HasValue)
         {
             var matchedPrice = price * Math.Sign(this.TurningPrice.Value);
-            
+
             if (Math.Abs(this.TurningPrice.Value) < 1)
             {
                 if (matchedPrice <= (this.TurningPrice.Value * 100000))
@@ -301,7 +306,7 @@ public class Strategy
         if (this.StopProfit1.HasValue && this.Profit >= this.StopProfit1.Value)
         {
             this.Profits.Add(new Profit { Time = this.Time, Deal = this.Deal.Value, Value = this.Profit });
-            
+
             if (this.StopProfit2.HasValue)
             {
                 Console.Write($", 利1={this.StopProfit1.Value}");

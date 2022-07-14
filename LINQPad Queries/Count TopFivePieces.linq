@@ -10,7 +10,7 @@ var dir = @"D:\Applications\MoneyStudio\Quotes";
 var volDict = new Dictionary<long, long>();
 var prevTopFivePieces = default(TopFivePieces);
 
-foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f => Path.GetFileName(f)).Skip(2).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
 {
     // 只抓一年內
     if (Path.GetFileNameWithoutExtension(file).CompareTo(DateTime.Today.AddYears(-1).ToString("yyyy-MM-dd")) < 0) break;
