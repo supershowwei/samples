@@ -8,7 +8,7 @@ var dir = @"D:\Applications\MoneyStudio\Quotes";
 var tickDict = new Dictionary<long, long>();
 var timeDict = new Dictionary<string, long>();
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(1))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0))
 {
     // 只抓一年內
     if (Path.GetFileNameWithoutExtension(file).CompareTo(DateTime.Today.AddYears(-1).ToString("yyyy-MM-dd")) < 0) break;
@@ -44,8 +44,8 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
     //break;
 }
 
-//tickDict.OrderByDescending(kv => kv.Key).Dump();
-timeDict.OrderBy(kv => kv.Key).Dump();
+tickDict.OrderByDescending(kv => kv.Key).Dump();
+//timeDict.OrderBy(kv => kv.Key).Dump();
 
 }
 public class Quote

@@ -17,20 +17,26 @@ var mainForce = default(MainForce);
 var mainForceQuotes = default(LinkedList<Quote>);
 var strategy = default(Strategy);
 var profits = new List<Profit>();
+var luckyOpening = false;
+var luckyOpeningOrderPirce = default(decimal?);
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(3).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(30))
 {
     var topFivePiecesFile = Path.ChangeExtension(file, "topfive");
 
     if (!File.Exists(topFivePiecesFile)) break;
-
-    var topFivePieces = TopFivePieces.Deserialize(File.ReadAllLines(topFivePiecesFile).First());
 
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
     mainForce = new MainForce();
     mainForceQuotes = new LinkedList<Quote>();
     strategy = new Strategy();
+    luckyOpening = false;
+    luckyOpeningOrderPirce = default(decimal?);
+
+    var topFivePiecesQueue = new Queue<string>(File.ReadAllLines(topFivePiecesFile));
+    var prevTopFivePieces = default(TopFivePieces);
+    var prevQuote = default(Quote);
 
     foreach (var quoteLine in File.ReadAllLines(file))
     {
@@ -38,9 +44,86 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         if (!quoteLine.StartsWith("{\"Symbol\":\"TXF")) continue;
 
         var quote = JsonConvert.DeserializeObject<Quote>(quoteLine);
+
+        if (!luckyOpening)
+        {
+            // 08:46 之後不做開市大吉
+            if (quote.Time >= quote.Time.Date.Add(TimeSpan.Parse("8:47:0")))
+            {
+                luckyOpening = true;
+                break;
+            }
+        }
+
+        if (prevQuote != null)
+        {
+            var topFivePieces = topFivePiecesQueue.Count > 0 ? TopFivePieces.Deserialize(topFivePiecesQueue.Peek()) : default(TopFivePieces);
+            
+            while (topFivePiecesQueue.Count > 0 && topFivePieces.Time < quote.Time)
+            {
+                topFivePiecesQueue.Dequeue();
+
+                if (prevTopFivePieces != null)
+                {
+                    foreach (var topBidPiece in topFivePieces.TopBidPieces)
+                    {
+                        var prevTopBidPiece = prevTopFivePieces.TopBidPieces.SingleOrDefault(x => x.Price == topBidPiece.Price);
+                        
+                        topBidPiece.Delta = prevTopBidPiece != null ? (topBidPiece.Volume - prevTopBidPiece.Volume) : topBidPiece.Volume;
+                    }
+
+                    foreach (var topAskPiece in topFivePieces.TopAskPieces)
+                    {
+                        var prevTopAskPiece = prevTopFivePieces.TopAskPieces.SingleOrDefault(x => x.Price == topAskPiece.Price);
+
+                        topAskPiece.Delta = prevTopAskPiece != null ? (topAskPiece.Volume - prevTopAskPiece.Volume) : topAskPiece.Volume;
+                    }
+                }
+
+                prevTopFivePieces = topFivePieces;
+
+                // 開市大吉
+                if (!luckyOpening && !luckyOpeningOrderPirce.HasValue)
+                {
+                    if (prevQuote.OrderVolume.AskOrderVolume > prevQuote.OrderVolume.BidOrderVolume)
+                    {
+                        if (topFivePieces.TopAskPieces.Sum(x => x.Volume) > topFivePieces.TopBidPieces.Sum(x => x.Volume))
+                            if (topFivePieces.TopAskPieces.Any(x => x.Volume >= 40))
+                            {
+                                var topAskPiece = topFivePieces.TopAskPieces.First(x => x.Volume >= 40);
+                                
+                                luckyOpeningOrderPirce = -prevQuote.Price;
+                            }
+                    }
+                    else if (prevQuote.OrderVolume.BidOrderVolume > prevQuote.OrderVolume.AskOrderVolume)
+                    {
+                        if (topFivePieces.TopBidPieces.Sum(x => x.Volume) > topFivePieces.TopAskPieces.Sum(x => x.Volume))
+                            if (topFivePieces.TopBidPieces.Any(x => x.Volume >= 40))
+                            {
+                                var topBidPiece = topFivePieces.TopBidPieces.First(x => x.Volume >= 40);
+                                
+                                luckyOpeningOrderPirce = prevQuote.Price;
+                            }
+                    }
+                }
+
+                topFivePieces = TopFivePieces.Deserialize(topFivePiecesQueue.Peek());
+            }
+        }
         
-        // 開市大吉
-        
+        if (!luckyOpening && luckyOpeningOrderPirce.HasValue)
+        {
+            if (luckyOpeningOrderPirce < 0 && prevQuote.Price >= -luckyOpeningOrderPirce.Value)
+            {
+                strategy.Go(prevQuote.Time, -prevQuote.Price);
+                luckyOpening = true;
+            }
+            else if (luckyOpeningOrderPirce > 0 && prevQuote.Price <= luckyOpeningOrderPirce.Value)
+            {
+                strategy.Go(prevQuote.Time, prevQuote.Price);
+                luckyOpening = true;
+            }
+        }
 
         var minuteTime = quote.Time.StopMinute().AddMinutes(1);
 
@@ -72,6 +155,11 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 
         // 輸 40 點以上就不玩了
         //if (strategy.Profits.Sum(x => x.Total) <= -40) break;
+
+        // 停利停損 n 次以上就不玩了
+        if (strategy.StoppedCount >= 1) break;
+
+        prevQuote = quote;
     }
 
     if (strategy.Deal.HasValue) strategy.ForceStop(dailyCandlestick.Close);
@@ -171,11 +259,13 @@ public class Strategy
     public decimal? TurningPrice { get; set; }
     public decimal? Deal { get; set; }
     public decimal? StopLoss { get; set; }
-    public decimal? MaxStopLoss { get; set; }
+    public decimal? MaxLoss { get; set; }
     public decimal? Breakeven { get; set; }
     public decimal? StopProfit1 { get; set; }
     public decimal? StopProfit2 { get; set; }
     public decimal Profit { get; set; }
+    public decimal? MaxProfit { get; set; }
+    public int StoppedCount { get; set; }
     public List<Profit> Profits { get; set; }
 
     public void TurnBack(DateTime time, decimal price)
@@ -241,30 +331,11 @@ public class Strategy
         this.Deal = price + 2;
 
         this.StopLoss = 10;
-
-        // 躲牆後
-        if (this.StopLoss.HasValue)
-        {
-            switch ((this.Deal.Value - this.StopLoss.Value) % 10)
-            {
-                case 0:
-                case 5:
-                case -5:
-                    this.StopLoss += 1;
-                    break;
-                case 1:
-                case -9:
-                case 6:
-                case -4:
-                    this.StopLoss += 2;
-                    break;
-            }
-        }
-
-        //this.Breakeven = 10;
-        this.StopProfit1 = 12;
-        this.StopProfit2 = 52;
-        this.MaxStopLoss = 0;
+        this.Breakeven = 10;
+        this.StopProfit1 = 52;
+        //this.StopProfit2 = 52;
+        this.MaxLoss = 0;
+        this.MaxProfit = 0;
 
         Console.Write($"{time:yyyy-MM-dd HH:mm:ss}, {(price > 0 ? "多" : "空")}, 進場={this.Deal.Value}");
     }
@@ -275,9 +346,14 @@ public class Strategy
 
         this.Profit = (price - Math.Abs(this.Deal.Value)) * Math.Sign(this.Deal.Value);
 
-        if (this.MaxStopLoss.HasValue)
+        if (this.MaxProfit.HasValue)
         {
-            this.MaxStopLoss = Math.Min(this.MaxStopLoss.Value, this.Profit);
+            this.MaxProfit = Math.Max(this.MaxProfit.Value, this.Profit);
+        }
+
+        if (this.MaxLoss.HasValue)
+        {
+            this.MaxLoss = Math.Min(this.MaxLoss.Value, this.Profit);
         }
 
         if (this.Breakeven.HasValue && this.Profit >= this.Breakeven.Value)
@@ -298,7 +374,7 @@ public class Strategy
                 this.Profits.Add(new Profit { Time = this.Time, Deal = this.Deal.Value, Value = this.Profit });
             }
 
-            this.Stop($", {(this.StopLoss.Value == 0 ? "保本" : "停損")}={(this.StopProfit1.HasValue && this.StopProfit2.HasValue ? this.StopLoss.Value * 2 : this.StopLoss.Value)}");
+            this.Stop($", {(this.StopLoss.Value == 0 ? "保本" : "停損")}={(this.StopProfit1.HasValue && this.StopProfit2.HasValue ? this.StopLoss.Value * 2 : -this.StopLoss.Value)}");
 
             return;
         }
@@ -355,8 +431,9 @@ public class Strategy
         this.Breakeven = default;
         this.StopProfit1 = default;
         this.StopProfit2 = default;
+        this.StoppedCount++;
 
-        Console.WriteLine($"{result}, 最大回撤={this.MaxStopLoss}");
+        Console.WriteLine($"{result}, 最大獲利={this.MaxProfit}, 最大回撤={this.MaxLoss}");
     }
 }
 public class Quote

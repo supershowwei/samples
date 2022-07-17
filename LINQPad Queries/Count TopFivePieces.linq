@@ -8,9 +8,11 @@
 
 var dir = @"D:\Applications\MoneyStudio\Quotes";
 var volDict = new Dictionary<long, long>();
+var bidCountDict = new Dictionary<long, long>();
+var askCountDict = new Dictionary<long, long>();
 var prevTopFivePieces = default(TopFivePieces);
 
-foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f => Path.GetFileName(f)).Skip(0))
 {
     // 只抓一年內
     if (Path.GetFileNameWithoutExtension(file).CompareTo(DateTime.Today.AddYears(-1).ToString("yyyy-MM-dd")) < 0) break;
@@ -18,6 +20,29 @@ foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f =>
     foreach (var line in File.ReadAllLines(file))
     {
         var curtTopFivePieces = TopFivePieces.Deserialize(line);
+        
+        // 只統計 08:47 之前
+        if (curtTopFivePieces.Time >= curtTopFivePieces.Time.Date.Add(TimeSpan.Parse("8:47:0"))) break;
+        
+        foreach (var topBidPiece in curtTopFivePieces.TopBidPieces)
+        {
+            if (!bidCountDict.ContainsKey(topBidPiece.Volume))
+            {
+                bidCountDict.Add(topBidPiece.Volume, 0);
+            }
+
+            bidCountDict[topBidPiece.Volume] = bidCountDict[topBidPiece.Volume] + 1;
+        }
+
+        foreach (var topAskPiece in curtTopFivePieces.TopAskPieces)
+        {
+            if (!askCountDict.ContainsKey(topAskPiece.Volume))
+            {
+                askCountDict.Add(topAskPiece.Volume, 0);
+            }
+
+            askCountDict[topAskPiece.Volume] = askCountDict[topAskPiece.Volume] + 1;
+        }
 
         if (prevTopFivePieces != null)
         {
@@ -43,11 +68,6 @@ foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f =>
                     }
 
                     volDict[vol] = volDict[vol] + 1;
-
-                    if (vol >= 100)
-                    {
-                        Console.WriteLine($"{curtTopFivePieces.Time}: {vol}");
-                    }
                 }
             }
             
@@ -73,11 +93,6 @@ foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f =>
                     }
 
                     volDict[vol] = volDict[vol] + 1;
-
-                    if (vol <= -100)
-                    {
-                        Console.WriteLine($"{curtTopFivePieces.Time}: {vol}");
-                    }
                 }
             }
         }
@@ -88,7 +103,9 @@ foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f =>
     //break;
 }
 
-volDict.OrderByDescending(kv => kv.Key).Dump();
+bidCountDict.OrderByDescending(kv => kv.Key).Dump();
+askCountDict.OrderByDescending(kv => kv.Key).Dump();
+//volDict.OrderByDescending(kv => kv.Key).Dump();
 
 }
 public enum OrderSide
