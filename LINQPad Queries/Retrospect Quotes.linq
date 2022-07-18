@@ -88,20 +88,20 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
                     if (prevQuote.OrderVolume.AskOrderVolume > prevQuote.OrderVolume.BidOrderVolume)
                     {
                         if (topFivePieces.TopAskPieces.Sum(x => x.Volume) > topFivePieces.TopBidPieces.Sum(x => x.Volume))
-                            if (topFivePieces.TopAskPieces.Any(x => x.Volume >= 40))
+							//if (topFivePieces.TopAskPieces.Any(x => x.Volume >= 40))
+                            if (topFivePieces.TopAskPieces.Sum(x => x.Volume) >= 88)
+							if ((topFivePieces.TopAskPieces.Sum(x => x.Volume) / (decimal)topFivePieces.TopBidPieces.Sum(x => x.Volume)) >= 1.6m)
                             {
-                                var topAskPiece = topFivePieces.TopAskPieces.First(x => x.Volume >= 40);
-                                
                                 luckyOpeningOrderPirce = -prevQuote.Price;
                             }
                     }
                     else if (prevQuote.OrderVolume.BidOrderVolume > prevQuote.OrderVolume.AskOrderVolume)
                     {
                         if (topFivePieces.TopBidPieces.Sum(x => x.Volume) > topFivePieces.TopAskPieces.Sum(x => x.Volume))
-                            if (topFivePieces.TopBidPieces.Any(x => x.Volume >= 40))
+							//if (topFivePieces.TopBidPieces.Any(x => x.Volume >= 40))
+                            if (topFivePieces.TopBidPieces.Sum(x => x.Volume) >= 88)
+							if ((topFivePieces.TopBidPieces.Sum(x => x.Volume) / (decimal)topFivePieces.TopAskPieces.Sum(x => x.Volume)) >= 1.6m)
                             {
-                                var topBidPiece = topFivePieces.TopBidPieces.First(x => x.Volume >= 40);
-                                
                                 luckyOpeningOrderPirce = prevQuote.Price;
                             }
                     }

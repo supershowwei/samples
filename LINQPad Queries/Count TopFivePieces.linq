@@ -10,9 +10,10 @@ var dir = @"D:\Applications\MoneyStudio\Quotes";
 var volDict = new Dictionary<long, long>();
 var bidCountDict = new Dictionary<long, long>();
 var askCountDict = new Dictionary<long, long>();
+var topFivePieceRatioDict = new Dictionary<decimal, long>();
 var prevTopFivePieces = default(TopFivePieces);
 
-foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f => Path.GetFileName(f)).Skip(0))
+foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f => Path.GetFileName(f)).Skip(1))
 {
     // 只抓一年內
     if (Path.GetFileNameWithoutExtension(file).CompareTo(DateTime.Today.AddYears(-1).ToString("yyyy-MM-dd")) < 0) break;
@@ -24,27 +25,36 @@ foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f =>
         // 只統計 08:47 之前
         if (curtTopFivePieces.Time >= curtTopFivePieces.Time.Date.Add(TimeSpan.Parse("8:47:0"))) break;
         
-        foreach (var topBidPiece in curtTopFivePieces.TopBidPieces)
-        {
-            if (!bidCountDict.ContainsKey(topBidPiece.Volume))
-            {
-                bidCountDict.Add(topBidPiece.Volume, 0);
-            }
+		var topBidPieceTotalVolume = curtTopFivePieces.TopBidPieces.Sum(x => x.Volume);
+		
+        if (!bidCountDict.ContainsKey(topBidPieceTotalVolume))
+		{
+			bidCountDict.Add(topBidPieceTotalVolume, 0);
+		}
 
-            bidCountDict[topBidPiece.Volume] = bidCountDict[topBidPiece.Volume] + 1;
-        }
+		bidCountDict[topBidPieceTotalVolume] = bidCountDict[topBidPieceTotalVolume] + 1;
 
-        foreach (var topAskPiece in curtTopFivePieces.TopAskPieces)
-        {
-            if (!askCountDict.ContainsKey(topAskPiece.Volume))
-            {
-                askCountDict.Add(topAskPiece.Volume, 0);
-            }
+		var topAskPieceTotalVolume = curtTopFivePieces.TopAskPieces.Sum(x => x.Volume);
 
-            askCountDict[topAskPiece.Volume] = askCountDict[topAskPiece.Volume] + 1;
-        }
+		if (!askCountDict.ContainsKey(topAskPieceTotalVolume))
+		{
+			askCountDict.Add(topAskPieceTotalVolume, 0);
+		}
 
-        if (prevTopFivePieces != null)
+		askCountDict[topAskPieceTotalVolume] = askCountDict[topAskPieceTotalVolume] + 1;
+		
+		var topFivePieceRatio = topBidPieceTotalVolume >= topAskPieceTotalVolume
+			? (decimal)Math.Round(topBidPieceTotalVolume / (double)topAskPieceTotalVolume, 1)
+			: -(decimal)Math.Round(topAskPieceTotalVolume / (double)topBidPieceTotalVolume, 1);
+
+		if (!topFivePieceRatioDict.ContainsKey(topFivePieceRatio))
+		{
+			topFivePieceRatioDict.Add(topFivePieceRatio, 0);
+		}
+		
+		topFivePieceRatioDict[topFivePieceRatio] = topFivePieceRatioDict[topFivePieceRatio] + 1;
+
+		if (prevTopFivePieces != null)
         {
             // 外盤變內盤
             foreach (var askPiece in prevTopFivePieces.TopAskPieces)
@@ -103,8 +113,9 @@ foreach (var file in Directory.GetFiles(dir, "*.topfive").OrderByDescending(f =>
     //break;
 }
 
-bidCountDict.OrderByDescending(kv => kv.Key).Dump();
-askCountDict.OrderByDescending(kv => kv.Key).Dump();
+//bidCountDict.OrderByDescending(kv => kv.Key).Dump();
+//askCountDict.OrderByDescending(kv => kv.Key).Dump();
+topFivePieceRatioDict.OrderByDescending(kv => kv.Key).Dump();
 //volDict.OrderByDescending(kv => kv.Key).Dump();
 
 }
