@@ -20,7 +20,7 @@ var profits = new List<Profit>();
 var luckyOpening = false;
 var luckyOpeningOrderPirce = default(decimal?);
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(30))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
 {
     var topFivePiecesFile = Path.ChangeExtension(file, "topfive");
 
@@ -85,25 +85,27 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
                 // 開市大吉
                 if (!luckyOpening && !luckyOpeningOrderPirce.HasValue)
                 {
-                    if (prevQuote.OrderVolume.AskOrderVolume > prevQuote.OrderVolume.BidOrderVolume)
+                    if (prevQuote.OrderVolume.AskOrderVolume > prevQuote.OrderVolume.BidOrderVolume && prevQuote.DealsFromBuy > prevQuote.DealsFromSell)
+                    //if (prevQuote.DealsFromBuy > prevQuote.DealsFromSell)
                     {
                         if (topFivePieces.TopAskPieces.Sum(x => x.Volume) > topFivePieces.TopBidPieces.Sum(x => x.Volume))
-							//if (topFivePieces.TopAskPieces.Any(x => x.Volume >= 40))
-                            if (topFivePieces.TopAskPieces.Sum(x => x.Volume) >= 88)
-							if ((topFivePieces.TopAskPieces.Sum(x => x.Volume) / (decimal)topFivePieces.TopBidPieces.Sum(x => x.Volume)) >= 1.6m)
-                            {
+//							if (topFivePieces.TopAskPieces.Any(x => x.Volume >= 50))
+                            if (topFivePieces.TopAskPieces.Sum(x => x.Volume) > 100)
+							if ((topFivePieces.TopAskPieces.Sum(x => x.Volume) / (decimal)topFivePieces.TopBidPieces.Sum(x => x.Volume)) >= 2m)
+                            //{
                                 luckyOpeningOrderPirce = -prevQuote.Price;
-                            }
+                            //}
                     }
-                    else if (prevQuote.OrderVolume.BidOrderVolume > prevQuote.OrderVolume.AskOrderVolume)
+                    else if (prevQuote.OrderVolume.BidOrderVolume > prevQuote.OrderVolume.AskOrderVolume && prevQuote.DealsFromSell > prevQuote.DealsFromBuy)
+                    //else if (prevQuote.DealsFromSell > prevQuote.DealsFromBuy)
                     {
                         if (topFivePieces.TopBidPieces.Sum(x => x.Volume) > topFivePieces.TopAskPieces.Sum(x => x.Volume))
-							//if (topFivePieces.TopBidPieces.Any(x => x.Volume >= 40))
-                            if (topFivePieces.TopBidPieces.Sum(x => x.Volume) >= 88)
-							if ((topFivePieces.TopBidPieces.Sum(x => x.Volume) / (decimal)topFivePieces.TopAskPieces.Sum(x => x.Volume)) >= 1.6m)
-                            {
+//							if (topFivePieces.TopBidPieces.Any(x => x.Volume >= 50))
+                            if (topFivePieces.TopBidPieces.Sum(x => x.Volume) > 100)
+							if ((topFivePieces.TopBidPieces.Sum(x => x.Volume) / (decimal)topFivePieces.TopAskPieces.Sum(x => x.Volume)) >= 2m)
+                            //{
                                 luckyOpeningOrderPirce = prevQuote.Price;
-                            }
+                            //}
                     }
                 }
 
@@ -246,7 +248,6 @@ void UpdateMainForce(DateTime time, Quote quote)
     }
 }
 
-}
 public class Strategy
 {
     public Strategy()
@@ -332,7 +333,7 @@ public class Strategy
 
         this.StopLoss = 10;
         this.Breakeven = 10;
-        this.StopProfit1 = 52;
+        this.StopProfit1 = 22;
         //this.StopProfit2 = 52;
         this.MaxLoss = 0;
         this.MaxProfit = 0;
@@ -580,3 +581,4 @@ public class BigOrderTopPieceHauntArgs
     public TopPiece TopPiece { get; }
 
     public bool IsVisible { get; }
+}
