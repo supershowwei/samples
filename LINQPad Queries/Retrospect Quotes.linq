@@ -17,26 +17,26 @@ var mainForce = default(MainForce);
 var mainForceQuotes = default(LinkedList<Quote>);
 var strategy = default(Strategy);
 var profits = new List<Profit>();
-var luckyOpening = false;
-var luckyOpeningOrderPirce = default(decimal?);
+var totalBidVolume = default(long?);
+var totalAskVolume = default(long?);
+var totalBidAmount = default(decimal?);
+var totalAskAmount = default(decimal?);
+var averageBidPrice = default(decimal?);
+var averageAskPrice = default(decimal?);
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(1).Take(1))
 {
-    var topFivePiecesFile = Path.ChangeExtension(file, "topfive");
-
-    if (!File.Exists(topFivePiecesFile)) break;
-
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
     mainForce = new MainForce();
     mainForceQuotes = new LinkedList<Quote>();
     strategy = new Strategy();
-    luckyOpening = false;
-    luckyOpeningOrderPirce = default(decimal?);
-
-    var topFivePiecesQueue = new Queue<string>(File.ReadAllLines(topFivePiecesFile));
-    var prevTopFivePieces = default(TopFivePieces);
-    var prevQuote = default(Quote);
+    totalBidVolume = default(long?);
+    totalAskVolume = default(long?);
+    totalBidAmount = default(decimal?);
+    totalAskAmount = default(decimal?);
+    averageBidPrice = default(decimal?);
+    averageAskPrice = default(decimal?);
 
     foreach (var quoteLine in File.ReadAllLines(file))
     {
@@ -44,95 +44,36 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         if (!quoteLine.StartsWith("{\"Symbol\":\"TXF")) continue;
 
         var quote = JsonConvert.DeserializeObject<Quote>(quoteLine);
-
-        if (!luckyOpening)
-        {
-            // 08:46 之後不做開市大吉
-            if (quote.Time >= quote.Time.Date.Add(TimeSpan.Parse("8:47:0")))
-            {
-                luckyOpening = true;
-                break;
-            }
-        }
-
-        if (prevQuote != null)
-        {
-            var topFivePieces = topFivePiecesQueue.Count > 0 ? TopFivePieces.Deserialize(topFivePiecesQueue.Peek()) : default(TopFivePieces);
-            
-            while (topFivePiecesQueue.Count > 0 && topFivePieces.Time < quote.Time)
-            {
-                topFivePiecesQueue.Dequeue();
-
-                if (prevTopFivePieces != null)
-                {
-                    foreach (var topBidPiece in topFivePieces.TopBidPieces)
-                    {
-                        var prevTopBidPiece = prevTopFivePieces.TopBidPieces.SingleOrDefault(x => x.Price == topBidPiece.Price);
-                        
-                        topBidPiece.Delta = prevTopBidPiece != null ? (topBidPiece.Volume - prevTopBidPiece.Volume) : topBidPiece.Volume;
-                    }
-
-                    foreach (var topAskPiece in topFivePieces.TopAskPieces)
-                    {
-                        var prevTopAskPiece = prevTopFivePieces.TopAskPieces.SingleOrDefault(x => x.Price == topAskPiece.Price);
-
-                        topAskPiece.Delta = prevTopAskPiece != null ? (topAskPiece.Volume - prevTopAskPiece.Volume) : topAskPiece.Volume;
-                    }
-                }
-
-                prevTopFivePieces = topFivePieces;
-
-                // 開市大吉
-                if (!luckyOpening && !luckyOpeningOrderPirce.HasValue)
-                {
-                    if (prevQuote.OrderVolume.AskOrderVolume > prevQuote.OrderVolume.BidOrderVolume && prevQuote.DealsFromBuy > prevQuote.DealsFromSell)
-                    //if (prevQuote.DealsFromBuy > prevQuote.DealsFromSell)
-                    {
-                        if (topFivePieces.TopAskPieces.Sum(x => x.Volume) > topFivePieces.TopBidPieces.Sum(x => x.Volume))
-//							if (topFivePieces.TopAskPieces.Any(x => x.Volume >= 50))
-                            if (topFivePieces.TopAskPieces.Sum(x => x.Volume) > 100)
-							if ((topFivePieces.TopAskPieces.Sum(x => x.Volume) / (decimal)topFivePieces.TopBidPieces.Sum(x => x.Volume)) >= 2m)
-                            //{
-                                luckyOpeningOrderPirce = -prevQuote.Price;
-                            //}
-                    }
-                    else if (prevQuote.OrderVolume.BidOrderVolume > prevQuote.OrderVolume.AskOrderVolume && prevQuote.DealsFromSell > prevQuote.DealsFromBuy)
-                    //else if (prevQuote.DealsFromSell > prevQuote.DealsFromBuy)
-                    {
-                        if (topFivePieces.TopBidPieces.Sum(x => x.Volume) > topFivePieces.TopAskPieces.Sum(x => x.Volume))
-//							if (topFivePieces.TopBidPieces.Any(x => x.Volume >= 50))
-                            if (topFivePieces.TopBidPieces.Sum(x => x.Volume) > 100)
-							if ((topFivePieces.TopBidPieces.Sum(x => x.Volume) / (decimal)topFivePieces.TopAskPieces.Sum(x => x.Volume)) >= 2m)
-                            //{
-                                luckyOpeningOrderPirce = prevQuote.Price;
-                            //}
-                    }
-                }
-
-                topFivePieces = TopFivePieces.Deserialize(topFivePiecesQueue.Peek());
-            }
-        }
         
-        if (!luckyOpening && luckyOpeningOrderPirce.HasValue)
+        if (quote.BidVolume > 0)
         {
-            if (luckyOpeningOrderPirce < 0 && prevQuote.Price >= -luckyOpeningOrderPirce.Value)
-            {
-                strategy.Go(prevQuote.Time, -prevQuote.Price);
-                luckyOpening = true;
-            }
-            else if (luckyOpeningOrderPirce > 0 && prevQuote.Price <= luckyOpeningOrderPirce.Value)
-            {
-                strategy.Go(prevQuote.Time, prevQuote.Price);
-                luckyOpening = true;
-            }
+            totalBidVolume = totalBidVolume + quote.BidVolume;
+            totalBidAmount = totalBidAmount + (quote.Price * quote.BidVolume);
+            averageBidPrice = totalBidAmount / totalBidVolume;
+        }
+        else if (quote.AskVolume > 0)
+        {
+            totalAskVolume = totalAskVolume + quote.AskVolume;
+            totalAskAmount = totalAskAmount + (quote.Price * quote.AskVolume);
+            averageAskPrice = totalAskAmount / totalAskVolume;
         }
 
         var minuteTime = quote.Time.StopMinute().AddMinutes(1);
 
         // 新分Ｋ開
-        if (minuteCandlesticks.Count > 1 && minuteCandlesticks.Last().Time != minuteTime)
+        if (minuteCandlesticks.Count > 2 && minuteCandlesticks.Last().Time != minuteTime)
         {
-            var minuteCandlestick = minuteCandlesticks.Last();
+            var prevMinK = minuteCandlesticks[minuteCandlesticks.Count - 2];
+            var curtMinK = minuteCandlesticks.Last();
+            
+            if (curtMinK.Time.ToString("HHmm") == "0847")
+            {
+                
+            }
+            else if (curtMinK.Time.ToString("HHmm").CompareTo("0900") <= 0)
+            {
+                
+            }
         }
 
         if (strategy.Deal.HasValue)
@@ -160,8 +101,6 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 
         // 停利停損 n 次以上就不玩了
         if (strategy.StoppedCount >= 1) break;
-
-        prevQuote = quote;
     }
 
     if (strategy.Deal.HasValue) strategy.ForceStop(dailyCandlestick.Close);
@@ -501,84 +440,4 @@ public class DenseDeal
 {
     public DateTime Time { get; set; }
     public long? Volume { get; set; }
-}
-public enum OrderSide
-{
-    [Description("買")]
-    Buy,
-
-    [Description("賣")]
-    Sell
-}
-public class TopPiece
-{
-    public TopPiece(OrderSide side, decimal price, long volume)
-    {
-        this.Side = side;
-        this.Price = price;
-        this.Volume = volume;
-    }
-
-    public OrderSide Side { get; }
-
-    public decimal Price { get; }
-
-    public long Volume { get; }
-
-    public long Delta { get; set; }
-}
-public class TopFivePieces
-{
-    private static readonly Regex PieceRegex = new Regex(@"([\d\-\.]+):([\d\-\.]+)", RegexOptions.Compiled);
-
-    public TopFivePieces(string symbol, DateTime time, IReadOnlyList<TopPiece> topBidPieces, IReadOnlyList<TopPiece> topAskPieces)
-    {
-        this.Symbol = symbol;
-        this.Time = time;
-        this.TopBidPieces = topBidPieces;
-        this.TopAskPieces = topAskPieces;
-    }
-
-    public string Symbol { get; }
-
-    public DateTime Time { get; }
-
-    public IReadOnlyList<TopPiece> TopBidPieces { get; }
-
-    public IReadOnlyList<TopPiece> TopAskPieces { get; }
-
-    public static TopFivePieces Deserialize(string value)
-    {
-        var arr = value.Split('_');
-
-        var symbol = arr[0];
-        var time = long.Parse(arr[1]).ToDateTime();
-
-        var topBidPieces = PieceRegex.Matches(arr[2])
-            .OfType<Match>()
-            .Select(m => new TopPiece(OrderSide.Buy, decimal.Parse(m.Groups[1].Value), long.Parse(m.Groups[2].Value)))
-            .ToList();
-
-        var topAskPieces = PieceRegex.Matches(arr[3])
-            .OfType<Match>()
-            .Select(m => new TopPiece(OrderSide.Sell, decimal.Parse(m.Groups[1].Value), long.Parse(m.Groups[2].Value)))
-            .ToList();
-
-        return new TopFivePieces(symbol, time, topBidPieces, topAskPieces);
-    }
-}
-public class BigOrderTopPieceHauntArgs
-{
-    public BigOrderTopPieceHauntArgs(DateTime time, TopPiece topPiece, bool isVisible)
-    {
-        this.Time = time;
-        this.TopPiece = topPiece;
-        this.IsVisible = isVisible;
-    }
-
-    public DateTime Time { get; }
-
-    public TopPiece TopPiece { get; }
-
-    public bool IsVisible { get; }
 }
