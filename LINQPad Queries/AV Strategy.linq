@@ -2,12 +2,10 @@
   <NuGetReference>Chef.Extensions.Agility</NuGetReference>
   <NuGetReference>CsvHelper</NuGetReference>
   <NuGetReference>Newtonsoft.Json</NuGetReference>
-  <Namespace>Chef.Extensions.DateTime</Namespace>
-  <Namespace>Chef.Extensions.Long</Namespace>
+  <Namespace>System.Globalization</Namespace>
   <Namespace>CsvHelper</Namespace>
   <Namespace>Newtonsoft.Json</Namespace>
-  <Namespace>System.ComponentModel</Namespace>
-  <Namespace>System.Globalization</Namespace>
+  <Namespace>Chef.Extensions.DateTime</Namespace>
 </Query>
 
 var dir = @"D:\Applications\MoneyStudio\Quotes";
@@ -17,14 +15,28 @@ var mainForce = default(MainForce);
 var mainForceQuotes = default(LinkedList<Quote>);
 var strategy = default(Strategy);
 var profits = new List<Profit>();
+var totalBidVolume = default(long?);
+var totalAskVolume = default(long?);
+var totalBidAmount = default(decimal?);
+var totalAskAmount = default(decimal?);
+var averageBidPrice = default(decimal?);
+var averageAskPrice = default(decimal?);
+var avSignal = default(AVSignal);
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(60))
 {
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
     mainForce = new MainForce();
     mainForceQuotes = new LinkedList<Quote>();
     strategy = new Strategy();
+    totalBidVolume = default(long?);
+    totalAskVolume = default(long?);
+    totalBidAmount = default(decimal?);
+    totalAskAmount = default(decimal?);
+    averageBidPrice = default(decimal?);
+    averageAskPrice = default(decimal?);
+    avSignal = new AVSignal();
 
     foreach (var quoteLine in File.ReadAllLines(file))
     {
@@ -33,18 +45,68 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 
         var quote = JsonConvert.DeserializeObject<Quote>(quoteLine);
 
-        var minuteTime = quote.Time.StopMinute().AddMinutes(1);
-
-        UpdateMainForce(minuteTime, quote);
-        
-        // 新分Ｋ開
-        if (minuteCandlesticks.Count > 1 && minuteCandlesticks.Last().Time != minuteTime)
+        if (quote.BidVolume > 0)
         {
-
+            totalBidVolume = (totalBidVolume ?? 0) + quote.BidVolume;
+            totalBidAmount = (totalBidAmount ?? 0) + (quote.Price * quote.BidVolume);
+            averageBidPrice = totalBidAmount / totalBidVolume;
+        }
+        else if (quote.AskVolume > 0)
+        {
+            totalAskVolume = (totalAskVolume ?? 0) + quote.AskVolume;
+            totalAskAmount = (totalAskAmount ?? 0) + (quote.Price * quote.AskVolume);
+            averageAskPrice = totalAskAmount / totalAskVolume;
         }
 
-        UpdateDailyCandlestick(quote);
-        UpdateMinuteCandlesticks(minuteTime, quote);
+        var minuteTime = quote.Time.StopMinute().AddMinutes(1);
+        
+        UpdateMainForce(minuteTime, quote);
+
+        var averageMainForcePrice = mainForceQuotes.Sum(x => x.Price * x.Volume) / mainForceQuotes.Sum(x => x.Volume);
+        
+        var prevHigh = minuteCandlesticks.Count > 2 ? minuteCandlesticks.Where(x => x.Time < minuteTime).Max(x => x.High) : decimal.MaxValue;
+        var prevLow = minuteCandlesticks.Count > 2 ? minuteCandlesticks.Where(x => x.Time < minuteTime).Min(x => x.Low) : decimal.MinValue;
+
+        // 新分Ｋ開
+        if (minuteCandlesticks.Count > 0 && minuteCandlesticks.Last().Time != minuteTime)
+        {
+            if (!strategy.Deal.HasValue)
+            {
+                avSignal.Touched = false;
+            }
+        }
+
+        if (!avSignal.Touched && minuteCandlesticks.Count > 2 && averageMainForcePrice < Math.Max(averageBidPrice.Value, averageAskPrice.Value) && averageMainForcePrice > Math.Min(averageBidPrice.Value, averageAskPrice.Value))
+        {
+            if (quote.Time.ToString("HHmm").CompareTo("0900") >= 0 && quote.Time.ToString("HHmm").CompareTo("1045") <= 0)
+            {
+                if (quote.Price > (prevHigh + 5))
+                {
+                    //strategy.Go(quote.Time, -quote.Price);
+                    avSignal.Touched = true;
+                    avSignal.Price = -quote.Price;
+                    //avSignal.FreezeTime = quote.Time.AddMinutes(2).StopMinute();
+                }
+                else if (quote.Price < (prevLow - 5))
+                {
+                    //strategy.Go(quote.Time, quote.Price);
+                    avSignal.Touched = true;
+                    avSignal.Price = quote.Price;
+                    //avSignal.FreezeTime = quote.Time.AddMinutes(2).StopMinute();
+                }
+            }
+        }
+        
+        if (avSignal.Touched && avSignal.Price < 0 && quote.Price < prevHigh)
+        {
+            strategy.Go(quote.Time, -quote.Price);
+            avSignal.Price = default;
+        }
+        else if (avSignal.Touched && avSignal.Price > 0 && quote.Price > prevLow)
+        {
+            strategy.Go(quote.Time, quote.Price);
+            avSignal.Price = default;
+        }
 
         if (strategy.Deal.HasValue)
         {
@@ -59,14 +121,17 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
             strategy.Match(quote.Time, quote.Price);
         }
 
+        UpdateDailyCandlestick(quote);
+        UpdateMinuteCandlesticks(minuteTime, quote);
+
         // 當沖出場
-        if (quote.Time.ToString("HHmmss").CompareTo("131500") >= 0) break;
+        if (quote.Time >= quote.Time.Date.Add(TimeSpan.Parse("13:14:0"))) break;
 
         // 輸 40 點以上就不玩了
         //if (strategy.Profits.Sum(x => x.Total) <= -40) break;
 
-        // 停利停損 n 次以上就不玩了
-        if (strategy.StoppedCount >= 1) break;
+        // 停損 n 次以上就不玩了
+        if (strategy.LossCount >= 2) break;
     }
 
     if (strategy.Deal.HasValue) strategy.ForceStop(dailyCandlestick.Close);
@@ -153,6 +218,15 @@ void UpdateMainForce(DateTime time, Quote quote)
     }
 }
 
+
+public class AVSignal
+{
+    public bool Touched { get; set; }
+    
+    public DateTime FreezeTime { get; set; }
+    
+    public decimal? Price { get; set; }
+}
 public class Strategy
 {
     public Strategy()
@@ -173,6 +247,7 @@ public class Strategy
     public decimal Profit { get; set; }
     public decimal? MaxProfit { get; set; }
     public int StoppedCount { get; set; }
+    public int LossCount { get; set; }
     public List<Profit> Profits { get; set; }
 
     public void TurnBack(DateTime time, decimal price)
@@ -214,16 +289,16 @@ public class Strategy
                 this.TurningOver = (this.TurningOver ?? 0) + (this.TurningPrice.Value - matchedPrice);
                 this.TurningPrice = matchedPrice;
             }
-            else if (this.TurningOver.HasValue && (matchedPrice - this.TurningPrice.Value) >= 4)
+            else if (this.TurningOver.HasValue && (matchedPrice - this.TurningPrice.Value) >= 10)
             {
                 this.Go(time, matchedPrice);
             }
 
-            if (this.TurningOver >= 5)
-            {
-                this.TurningPrice = default;
-                this.TurningOver = default;
-            }
+            //if (this.TurningOver >= 5)
+            //{
+            //    this.TurningPrice = default;
+            //    this.TurningOver = default;
+            //}
         }
     }
 
@@ -232,7 +307,8 @@ public class Strategy
         if (this.Deal.HasValue) return;
 
         this.Time = time;
-        this.Deal = price + 2;
+        //this.Deal = price + 1;
+        this.Deal = price;
 
         this.StopLoss = 10;
         this.Breakeven = 10;
@@ -276,6 +352,11 @@ public class Strategy
             if (this.StopProfit2.HasValue)
             {
                 this.Profits.Add(new Profit { Time = this.Time, Deal = this.Deal.Value, Value = this.Profit });
+            }
+            
+            if (this.StopLoss.Value != 0)
+            {
+                this.LossCount++;
             }
 
             this.Stop($", {(this.StopLoss.Value == 0 ? "保本" : "停損")}={(this.StopProfit1.HasValue && this.StopProfit2.HasValue ? this.StopLoss.Value * 2 : -this.StopLoss.Value)}");

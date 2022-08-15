@@ -2,12 +2,10 @@
   <NuGetReference>Chef.Extensions.Agility</NuGetReference>
   <NuGetReference>CsvHelper</NuGetReference>
   <NuGetReference>Newtonsoft.Json</NuGetReference>
-  <Namespace>Chef.Extensions.DateTime</Namespace>
-  <Namespace>Chef.Extensions.Long</Namespace>
+  <Namespace>System.Globalization</Namespace>
   <Namespace>CsvHelper</Namespace>
   <Namespace>Newtonsoft.Json</Namespace>
-  <Namespace>System.ComponentModel</Namespace>
-  <Namespace>System.Globalization</Namespace>
+  <Namespace>Chef.Extensions.DateTime</Namespace>
 </Query>
 
 var dir = @"D:\Applications\MoneyStudio\Quotes";
@@ -17,14 +15,30 @@ var mainForce = default(MainForce);
 var mainForceQuotes = default(LinkedList<Quote>);
 var strategy = default(Strategy);
 var profits = new List<Profit>();
+var prevQuote = default(Quote);
+var totalBidVolume = default(long?);
+var totalAskVolume = default(long?);
+var totalBidAmount = default(decimal?);
+var totalAskAmount = default(decimal?);
+var averageBidPrice = default(decimal?);
+var averageAskPrice = default(decimal?);
+var wallCross = default(WallCross);
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(60))
 {
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
     mainForce = new MainForce();
     mainForceQuotes = new LinkedList<Quote>();
     strategy = new Strategy();
+    prevQuote = default(Quote);
+    totalBidVolume = default(long?);
+    totalAskVolume = default(long?);
+    totalBidAmount = default(decimal?);
+    totalAskAmount = default(decimal?);
+    averageBidPrice = default(decimal?);
+    averageAskPrice = default(decimal?);
+    wallCross = new WallCross();
 
     foreach (var quoteLine in File.ReadAllLines(file))
     {
@@ -33,18 +47,64 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 
         var quote = JsonConvert.DeserializeObject<Quote>(quoteLine);
 
-        var minuteTime = quote.Time.StopMinute().AddMinutes(1);
-
-        UpdateMainForce(minuteTime, quote);
-        
-        // 新分Ｋ開
-        if (minuteCandlesticks.Count > 1 && minuteCandlesticks.Last().Time != minuteTime)
+        if (quote.BidVolume > 0)
         {
-
+            totalBidVolume = (totalBidVolume ?? 0) + quote.BidVolume;
+            totalBidAmount = (totalBidAmount ?? 0) + (quote.Price * quote.BidVolume);
+            averageBidPrice = totalBidAmount / totalBidVolume;
+        }
+        else if (quote.AskVolume > 0)
+        {
+            totalAskVolume = (totalAskVolume ?? 0) + quote.AskVolume;
+            totalAskAmount = (totalAskAmount ?? 0) + (quote.Price * quote.AskVolume);
+            averageAskPrice = totalAskAmount / totalAskVolume;
         }
 
-        UpdateDailyCandlestick(quote);
-        UpdateMinuteCandlesticks(minuteTime, quote);
+        var minuteTime = quote.Time.StopMinute().AddMinutes(1);
+        
+        UpdateMainForce(minuteTime, quote);
+
+        var averageMainForcePrice = mainForceQuotes.Sum(x => x.Price * x.Volume) / mainForceQuotes.Sum(x => x.Volume);
+
+        // 新分Ｋ開
+        if (minuteCandlesticks.Count > 2 && minuteCandlesticks.Last().Time != minuteTime)
+        {
+            var prevMinK = minuteCandlesticks[minuteCandlesticks.Count - 2];
+            var curtMinK = minuteCandlesticks.Last();
+            
+            if (curtMinK.Time.ToString("HHmm").CompareTo("0848") >= 0 && curtMinK.Time.ToString("HHmm").CompareTo("0946") <= 0)
+            {
+                if (wallCross.AllCross == 0)
+                {
+                    if (curtMinK.Open < Math.Min(averageMainForcePrice, Math.Min(averageBidPrice.Value, averageAskPrice.Value)) && curtMinK.Close > averageMainForcePrice)
+                    {
+                        wallCross.AllCross = 1;
+                    }
+                    else if (curtMinK.Open > Math.Max(averageMainForcePrice, Math.Max(averageBidPrice.Value, averageAskPrice.Value)) && curtMinK.Close < averageMainForcePrice)
+                    {
+                        wallCross.AllCross = -1;
+                    }
+                }
+                else
+                {
+                    wallCross.AllCross = 0;
+                }
+            }
+        }
+
+        if (wallCross.AllCross != 0)
+        {
+            if (wallCross.AllCross > 0 && quote.Price <= Math.Ceiling(averageMainForcePrice))
+            {
+                strategy.Go(quote.Time, quote.Price);
+                wallCross.AllCross = 0;
+            }
+            else if (wallCross.AllCross < 0 && quote.Price >= Math.Floor(averageMainForcePrice))
+            {
+                strategy.Go(quote.Time, -quote.Price);
+                wallCross.AllCross = 0;
+            }
+        }
 
         if (strategy.Deal.HasValue)
         {
@@ -59,14 +119,19 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
             strategy.Match(quote.Time, quote.Price);
         }
 
+        UpdateDailyCandlestick(quote);
+        UpdateMinuteCandlesticks(minuteTime, quote);
+        
+        prevQuote = quote;
+
         // 當沖出場
-        if (quote.Time.ToString("HHmmss").CompareTo("131500") >= 0) break;
+        if (quote.Time >= quote.Time.Date.Add(TimeSpan.Parse("13:14:0"))) break;
 
         // 輸 40 點以上就不玩了
         //if (strategy.Profits.Sum(x => x.Total) <= -40) break;
 
         // 停利停損 n 次以上就不玩了
-        if (strategy.StoppedCount >= 1) break;
+        //if (strategy.StoppedCount >= 1) break;
     }
 
     if (strategy.Deal.HasValue) strategy.ForceStop(dailyCandlestick.Close);
@@ -153,6 +218,10 @@ void UpdateMainForce(DateTime time, Quote quote)
     }
 }
 
+public class WallCross
+{
+    public int AllCross { get; set; }
+}
 public class Strategy
 {
     public Strategy()
@@ -163,7 +232,6 @@ public class Strategy
     public DateTime Time { get; set; }
     public decimal? OrderPrice { get; set; }
     public decimal? TurningPrice { get; set; }
-    public decimal? TurningOver { get; set; }
     public decimal? Deal { get; set; }
     public decimal? StopLoss { get; set; }
     public decimal? MaxLoss { get; set; }
@@ -209,20 +277,23 @@ public class Strategy
         {
             var matchedPrice = price * Math.Sign(this.TurningPrice.Value);
 
-            if (matchedPrice < this.TurningPrice.Value)
+            if (Math.Abs(this.TurningPrice.Value) < 1)
             {
-                this.TurningOver = (this.TurningOver ?? 0) + (this.TurningPrice.Value - matchedPrice);
-                this.TurningPrice = matchedPrice;
+                if (matchedPrice <= (this.TurningPrice.Value * 100000))
+                {
+                    this.TurningPrice = this.TurningPrice.Value * 100000;
+                }
             }
-            else if (this.TurningOver.HasValue && (matchedPrice - this.TurningPrice.Value) >= 4)
+            else
             {
-                this.Go(time, matchedPrice);
-            }
-
-            if (this.TurningOver >= 5)
-            {
-                this.TurningPrice = default;
-                this.TurningOver = default;
+                if (matchedPrice < this.TurningPrice.Value)
+                {
+                    this.TurningPrice = matchedPrice;
+                }
+                else if ((matchedPrice - this.TurningPrice.Value) >= 10)
+                {
+                    this.Go(time, matchedPrice);
+                }
             }
         }
     }
@@ -232,7 +303,8 @@ public class Strategy
         if (this.Deal.HasValue) return;
 
         this.Time = time;
-        this.Deal = price + 2;
+        //this.Deal = price + 2;
+        this.Deal = price;
 
         this.StopLoss = 10;
         this.Breakeven = 10;
@@ -330,7 +402,6 @@ public class Strategy
     {
         this.OrderPrice = default;
         this.TurningPrice = default;
-        this.TurningOver = default;
         this.Deal = default;
         this.StopLoss = default;
         this.Breakeven = default;

@@ -2,12 +2,10 @@
   <NuGetReference>Chef.Extensions.Agility</NuGetReference>
   <NuGetReference>CsvHelper</NuGetReference>
   <NuGetReference>Newtonsoft.Json</NuGetReference>
-  <Namespace>Chef.Extensions.DateTime</Namespace>
-  <Namespace>Chef.Extensions.Long</Namespace>
+  <Namespace>System.Globalization</Namespace>
   <Namespace>CsvHelper</Namespace>
   <Namespace>Newtonsoft.Json</Namespace>
-  <Namespace>System.ComponentModel</Namespace>
-  <Namespace>System.Globalization</Namespace>
+  <Namespace>Chef.Extensions.DateTime</Namespace>
 </Query>
 
 var dir = @"D:\Applications\MoneyStudio\Quotes";
@@ -17,14 +15,16 @@ var mainForce = default(MainForce);
 var mainForceQuotes = default(LinkedList<Quote>);
 var strategy = default(Strategy);
 var profits = new List<Profit>();
+var preQuote = default(Quote);
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(1).Take(20))
 {
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
     mainForce = new MainForce();
     mainForceQuotes = new LinkedList<Quote>();
     strategy = new Strategy();
+    preQuote = default(Quote);
 
     foreach (var quoteLine in File.ReadAllLines(file))
     {
@@ -36,15 +36,26 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         var minuteTime = quote.Time.StopMinute().AddMinutes(1);
 
         UpdateMainForce(minuteTime, quote);
-        
+
+        var averageMainForcePrice = mainForceQuotes.Sum(x => x.Price * x.Volume) / mainForceQuotes.Sum(x => x.Volume);
+
         // 新分Ｋ開
-        if (minuteCandlesticks.Count > 1 && minuteCandlesticks.Last().Time != minuteTime)
+        if (minuteCandlesticks.Count > 0 && minuteCandlesticks.Last().Time != minuteTime)
         {
 
         }
 
-        UpdateDailyCandlestick(quote);
-        UpdateMinuteCandlesticks(minuteTime, quote);
+        if (preQuote != null && quote.Time.ToString("HHmm").CompareTo("1000") >= 0 && quote.Time.ToString("HHmm").CompareTo("1200") <= 0)
+        {
+            if (preQuote.Price >= averageMainForcePrice && quote.Price < averageMainForcePrice)
+            {
+                strategy.Go(quote.Time, quote.Price);
+            }
+            else if (preQuote.Price <= averageMainForcePrice && quote.Price > averageMainForcePrice)
+            {
+                strategy.Go(quote.Time, -quote.Price);
+            }
+        }
 
         if (strategy.Deal.HasValue)
         {
@@ -59,14 +70,19 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
             strategy.Match(quote.Time, quote.Price);
         }
 
+        UpdateDailyCandlestick(quote);
+        UpdateMinuteCandlesticks(minuteTime, quote);
+        
+        preQuote = quote;
+
         // 當沖出場
-        if (quote.Time.ToString("HHmmss").CompareTo("131500") >= 0) break;
+        if (quote.Time >= quote.Time.Date.Add(TimeSpan.Parse("13:14:0"))) break;
 
         // 輸 40 點以上就不玩了
         //if (strategy.Profits.Sum(x => x.Total) <= -40) break;
 
-        // 停利停損 n 次以上就不玩了
-        if (strategy.StoppedCount >= 1) break;
+        // 停損 n 次以上就不玩了
+        if (strategy.LossCount >= 2) break;
     }
 
     if (strategy.Deal.HasValue) strategy.ForceStop(dailyCandlestick.Close);
@@ -153,6 +169,7 @@ void UpdateMainForce(DateTime time, Quote quote)
     }
 }
 
+
 public class Strategy
 {
     public Strategy()
@@ -173,6 +190,7 @@ public class Strategy
     public decimal Profit { get; set; }
     public decimal? MaxProfit { get; set; }
     public int StoppedCount { get; set; }
+    public int LossCount { get; set; }
     public List<Profit> Profits { get; set; }
 
     public void TurnBack(DateTime time, decimal price)
@@ -214,16 +232,16 @@ public class Strategy
                 this.TurningOver = (this.TurningOver ?? 0) + (this.TurningPrice.Value - matchedPrice);
                 this.TurningPrice = matchedPrice;
             }
-            else if (this.TurningOver.HasValue && (matchedPrice - this.TurningPrice.Value) >= 4)
+            else if (this.TurningOver.HasValue && (matchedPrice - this.TurningPrice.Value) >= 10)
             {
                 this.Go(time, matchedPrice);
             }
 
-            if (this.TurningOver >= 5)
-            {
-                this.TurningPrice = default;
-                this.TurningOver = default;
-            }
+            //if (this.TurningOver >= 5)
+            //{
+            //    this.TurningPrice = default;
+            //    this.TurningOver = default;
+            //}
         }
     }
 
@@ -232,7 +250,8 @@ public class Strategy
         if (this.Deal.HasValue) return;
 
         this.Time = time;
-        this.Deal = price + 2;
+        //this.Deal = price + 1;
+        this.Deal = price;
 
         this.StopLoss = 10;
         this.Breakeven = 10;
@@ -276,6 +295,11 @@ public class Strategy
             if (this.StopProfit2.HasValue)
             {
                 this.Profits.Add(new Profit { Time = this.Time, Deal = this.Deal.Value, Value = this.Profit });
+            }
+
+            if (this.StopLoss.Value != 0)
+            {
+                this.LossCount++;
             }
 
             this.Stop($", {(this.StopLoss.Value == 0 ? "保本" : "停損")}={(this.StopProfit1.HasValue && this.StopProfit2.HasValue ? this.StopLoss.Value * 2 : -this.StopLoss.Value)}");

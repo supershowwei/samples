@@ -17,14 +17,16 @@ var mainForce = default(MainForce);
 var mainForceQuotes = default(LinkedList<Quote>);
 var strategy = default(Strategy);
 var profits = new List<Profit>();
+var openingCandlestick = default(Candlestick);
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(60))
 {
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
     mainForce = new MainForce();
     mainForceQuotes = new LinkedList<Quote>();
     strategy = new Strategy();
+    openingCandlestick = default(Candlestick);
 
     foreach (var quoteLine in File.ReadAllLines(file))
     {
@@ -32,11 +34,38 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         if (!quoteLine.StartsWith("{\"Symbol\":\"TXF")) continue;
 
         var quote = JsonConvert.DeserializeObject<Quote>(quoteLine);
+        
+        if (openingCandlestick?.Time == null)
+        {
+            openingCandlestick = new Candlestick
+            {
+                Time = quote.Time.StopSecond(),
+                Open = quote.Price,
+                High = quote.Price,
+                Low = quote.Price,
+                Close = quote.Price
+            };
+        }
+        else if (openingCandlestick.Time.ToString("HHmmss") == quote.Time.ToString("HHmmss"))
+        {
+            openingCandlestick.High = Math.Max(openingCandlestick.High, quote.Price);
+            openingCandlestick.Low = Math.Min(openingCandlestick.Low, quote.Price);
+            openingCandlestick.Close = quote.Price;
+        }
+        else
+        {
+            if (openingCandlestick.Close < openingCandlestick.Open && quote.Price > openingCandlestick.Open)
+            {
+                strategy.Go(quote.Time, quote.Price);
+            }
+            else if (openingCandlestick.Close > openingCandlestick.Open && quote.Price < openingCandlestick.Open)
+            {
+                strategy.Go(quote.Time, -quote.Price);
+            }
+        }
 
         var minuteTime = quote.Time.StopMinute().AddMinutes(1);
 
-        UpdateMainForce(minuteTime, quote);
-        
         // 新分Ｋ開
         if (minuteCandlesticks.Count > 1 && minuteCandlesticks.Last().Time != minuteTime)
         {
@@ -45,6 +74,7 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 
         UpdateDailyCandlestick(quote);
         UpdateMinuteCandlesticks(minuteTime, quote);
+        UpdateMainForce(minuteTime, quote);
 
         if (strategy.Deal.HasValue)
         {
@@ -232,11 +262,11 @@ public class Strategy
         if (this.Deal.HasValue) return;
 
         this.Time = time;
-        this.Deal = price + 2;
+        this.Deal = price;
 
         this.StopLoss = 10;
         this.Breakeven = 10;
-        this.StopProfit1 = 32;
+        this.StopProfit1 = 22;
         //this.StopProfit2 = 52;
         this.MaxLoss = 0;
         this.MaxProfit = 0;

@@ -18,7 +18,7 @@ var mainForceQuotes = default(LinkedList<Quote>);
 var strategy = default(Strategy);
 var profits = new List<Profit>();
 
-foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(0).Take(1))
+foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => Path.GetFileName(f)).Skip(1).Take(20))
 {
     dailyCandlestick = default(Candlestick);
     minuteCandlesticks = new List<Candlestick>();
@@ -35,16 +35,41 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
 
         var minuteTime = quote.Time.StopMinute().AddMinutes(1);
 
-        UpdateMainForce(minuteTime, quote);
-        
         // 新分Ｋ開
         if (minuteCandlesticks.Count > 1 && minuteCandlesticks.Last().Time != minuteTime)
         {
+            if ((strategy.OrderPrice.HasValue || strategy.TurningPrice.HasValue) && !strategy.Deal.HasValue)
+            {
+                strategy.OrderPrice = default;
+                strategy.TurningPrice = default;
+                strategy.TurningOver = default;
+            }
+            
+            if (quote.Time.ToString("HHmm").CompareTo("0900") >= 0 && quote.Time.ToString("HHmm").CompareTo("0915") <= 0)
+            {
+                var prevMinK = minuteCandlesticks[minuteCandlesticks.Count - 2];
+                var curtMinK = minuteCandlesticks.Last();
 
+                if (curtMinK.IsBullish() && curtMinK.Close < curtMinK.High && quote.Price >= curtMinK.High)
+                //if (curtMinK.IsBullish() && curtMinK.Low > prevMinK.Low && curtMinK.High > prevMinK.High && curtMinK.Close < curtMinK.High && quote.Price >= curtMinK.High)
+                //if (curtMinK.IsBullish() && curtMinK.Close < curtMinK.High && quote.Price >= curtMinK.High && (quote.Price - curtMinK.Close) >= 2)
+                {
+                    //Console.WriteLine($"PrevK={(prevMinK.IsBullish() ? "Bullish" : prevMinK.IsBearish() ? "Bearish" : "None")}, Volume={curtMinK.Volume}");
+                    strategy.Order(quote.Time, -curtMinK.Close);
+                }
+                else if (curtMinK.IsBearish() && curtMinK.Close > curtMinK.Low && quote.Price <= curtMinK.Low)
+                //else if (curtMinK.IsBearish() && curtMinK.Low < prevMinK.Low && curtMinK.High < prevMinK.High && curtMinK.Close > curtMinK.Low && quote.Price <= curtMinK.Low)
+                //else if (curtMinK.IsBearish() && curtMinK.Close > curtMinK.Low && quote.Price <= curtMinK.Low && (quote.Price - curtMinK.Close) <= -2)
+                {
+                    //Console.WriteLine($"PrevK={(prevMinK.IsBullish() ? "Bullish" : prevMinK.IsBearish() ? "Bearish" : "None")}, Volume={curtMinK.Volume}");
+                    strategy.Order(quote.Time, curtMinK.Close);
+                }
+            }
         }
 
         UpdateDailyCandlestick(quote);
         UpdateMinuteCandlesticks(minuteTime, quote);
+        UpdateMainForce(minuteTime, quote);
 
         if (strategy.Deal.HasValue)
         {
@@ -66,7 +91,7 @@ foreach (var file in Directory.GetFiles(dir, "*.quote").OrderByDescending(f => P
         //if (strategy.Profits.Sum(x => x.Total) <= -40) break;
 
         // 停利停損 n 次以上就不玩了
-        if (strategy.StoppedCount >= 1) break;
+        //if (strategy.StoppedCount >= 1) break;
     }
 
     if (strategy.Deal.HasValue) strategy.ForceStop(dailyCandlestick.Close);
@@ -199,7 +224,8 @@ public class Strategy
         {
             var matchedPrice = price * Math.Sign(this.OrderPrice.Value);
 
-            if (matchedPrice < this.OrderPrice.Value)
+            //if (matchedPrice < this.OrderPrice.Value)
+            if (matchedPrice <= this.OrderPrice.Value)
             {
                 this.Go(time, this.OrderPrice.Value);
             }
@@ -232,11 +258,12 @@ public class Strategy
         if (this.Deal.HasValue) return;
 
         this.Time = time;
-        this.Deal = price + 2;
+        //this.Deal = price + 2;
+        this.Deal = price;
 
         this.StopLoss = 10;
-        this.Breakeven = 10;
-        this.StopProfit1 = 32;
+        //this.Breakeven = 8;
+        this.StopProfit1 = 12;
         //this.StopProfit2 = 52;
         this.MaxLoss = 0;
         this.MaxProfit = 0;
