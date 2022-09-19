@@ -1,0 +1,36 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Shortcut/@EntryValue">sqltx</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Description/@EntryValue">SQL with Transaction</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Text/@EntryValue">var sql = @"&#xD;
+$END$";&#xD;
+&#xD;
+using (var db = new SqlConnection($CONNECTION_STRING$))&#xD;
+{&#xD;
+	db.Open();&#xD;
+&#xD;
+	using (var tx = db.BeginTransaction())&#xD;
+	{&#xD;
+		try&#xD;
+		{&#xD;
+			&#xD;
+&#xD;
+			tx.Commit();&#xD;
+		}&#xD;
+		catch&#xD;
+		{&#xD;
+			tx.Rollback();&#xD;
+			throw;&#xD;
+		}&#xD;
+	}&#xD;
+}&#xD;
+</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Categories/=Imported_00202018_002F09_002F29/@EntryIndexedValue">Imported 2018/09/29</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Field/=CONNECTION_005FSTRING/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2AFE658DA8BBD14DB40490B583679884/Field/=CONNECTION_005FSTRING/Order/@EntryValue">0</s:Int64></wpf:ResourceDictionary>

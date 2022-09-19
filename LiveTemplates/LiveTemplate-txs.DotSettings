@@ -1,0 +1,18 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Shortcut/@EntryValue">txs</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Description/@EntryValue">TransactionScope</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Text/@EntryValue">using (var tx = new TransactionScope())&#xD;
+{&#xD;
+	$SELECTION$$END$&#xD;
+&#xD;
+	tx.Complete();&#xD;
+}</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Categories/=Imported_00202018_002F09_002F29/@EntryIndexedValue">Imported 2018/09/29</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Applicability/=Surround/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=50701607520F6A4CAB3CE5AF5174A42A/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String></wpf:ResourceDictionary>

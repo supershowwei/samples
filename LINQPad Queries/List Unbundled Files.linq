@@ -1,7 +1,7 @@
 <Query Kind="Statements" />
 
-var wwwroot = @"E:\wantgoo\src\WantGooArk\WantGooArk.Web\wwwroot";
-var bundleConfigFile = @"E:\wantgoo\src\WantGooArk\WantGooArk.Web\bundleconfig.json";
+var wwwroot = @"D:\Work\wantgoo\src\WantGooArk\WantGooArk.Web\wwwroot";
+var bundleConfigFile = @"D:\Work\wantgoo\src\WantGooArk\WantGooArk.Web\bundleconfig.json";
 
 var files = Directory.GetFiles(Path.Combine(wwwroot, "css"), "*.min.*", SearchOption.AllDirectories);
 
