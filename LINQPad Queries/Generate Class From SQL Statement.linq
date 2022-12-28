@@ -1,15 +1,17 @@
 <Query Kind="Program">
   <Connection>
-    <ID>95e26ab1-da32-4de4-ad6e-85e06a82e1e2</ID>
+    <ID>e4e65ae3-89eb-44b9-a0d0-b63a313afc5c</ID>
+    <NamingServiceVersion>2</NamingServiceVersion>
     <Persist>true</Persist>
-    <Server>elctaiwan.database.windows.net</Server>
+    <Server>db.wantgoo.local</Server>
+    <AllowDateOnlyTimeOnly>true</AllowDateOnlyTimeOnly>
     <SqlSecurity>true</SqlSecurity>
-    <NoPluralization>true</NoPluralization>
-    <UserName>sa_elctaiwan</UserName>
-    <Password>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA9DvsGbqzSU2DYYUe13mP6AAAAAACAAAAAAAQZgAAAAEAACAAAAAlCvdRILDIQMXbXAZvpvZoRMRwDnPIJvOZua9ZeNmD5wAAAAAOgAAAAAIAACAAAABp0bfmhhr5bKgaJKcR+G76yrTQNyNLgG+mOx3uV5IZzCAAAAChlzXCG7ubCQelQjB5ih/gPzaPRC93up1NeSCmTxGZm0AAAACLPVHhWvP0z2bBOSBm3F75vA/8BcyY4kd6f9r+sbW0v6u+abtslywkX/jqt+IjFS7/BiaVPWlG66EeE12T/RgV</Password>
-    <DbVersion>Azure</DbVersion>
-    <Database>elctaiwan</Database>
-    <ShowServer>true</ShowServer>
+    <UserName>pma$-3a5B2347-7BF6-4506-8E26-7D0FFE1CA91D-$$</UserName>
+    <Password>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAcJk1ehO/b0OnprrtF8EikwAAAAACAAAAAAAQZgAAAAEAACAAAAAUu4aRixkr1655yHtegRA16W/dzvAeLIcuHRwSCdkTZQAAAAAOgAAAAAIAACAAAABytvrTGSJfP3csoEBGxwxMZ1a72LX3cvYcRHcrz+efI0AAAACcgWx/ua7v7k4LTiU9/O2VxiDoAaObDt9evEjX/ZKdtXAoHAhe3JJD2rSkvitQJRSFFfVpvx8aRdxqJ+W5W+hhQAAAAPXccA9AM0fqBAP6XDdDofmoFg8wYp6vQFDPIS1WT0LXctaRkQM3lY4+uckobEvRU0nAP0EacUpCh2dPe3hRSpY=</Password>
+    <Database>Club</Database>
+    <DriverData>
+      <LegacyMFA>false</LegacyMFA>
+    </DriverData>
   </Connection>
   <NuGetReference>Chef.Extensions.Agility</NuGetReference>
   <NuGetReference>Newtonsoft.Json</NuGetReference>
@@ -17,8 +19,8 @@
 
 void Main()
 {
-    var tableName = "SeniorityAward";
-    var className = "SeniorityAward";
+    var tableName = "ClubRemuneration";
+    var className = "ClubRemuneration";
 
     this.Connection.DumpClass($"SELECT TOP 1 * FROM {tableName} WITH (NOLOCK)", className).Dump();
 }

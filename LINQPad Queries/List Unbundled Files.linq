@@ -9,7 +9,7 @@ files = files.Concat(Directory.GetFiles(Path.Combine(wwwroot, "js"), "*.min.*", 
 
 var bundleConfig = File.ReadAllText(bundleConfigFile);
 
-var unbundledFiles = files.Where(f => !new[] { "bot-detection.min.js", "signalr.min.js" }.Any(x => f.Contains(x)) && !bundleConfig.Contains(Path.GetFileName(f))).ToList();
+var unbundledFiles = files.Where(f => !new[] { "bot-detection.min.js", "signalr.min.js" }.Any(x => f.Contains(x)) && !bundleConfig.Contains(f.Replace(wwwroot, string.Empty).Replace("\\", "/"))).ToList();
 
 unbundledFiles.Dump();
 
