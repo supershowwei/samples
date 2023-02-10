@@ -1,13 +1,13 @@
 <Query Kind="Program">
   <Connection>
-    <ID>e4e65ae3-89eb-44b9-a0d0-b63a313afc5c</ID>
+    <ID>3c15d999-9d27-45e4-866f-0443f5cae520</ID>
     <NamingServiceVersion>2</NamingServiceVersion>
     <Persist>true</Persist>
-    <Server>db.wantgoo.local</Server>
+    <Server>dba.wantgoo.com</Server>
     <AllowDateOnlyTimeOnly>true</AllowDateOnlyTimeOnly>
     <SqlSecurity>true</SqlSecurity>
     <UserName>pma$-3a5B2347-7BF6-4506-8E26-7D0FFE1CA91D-$$</UserName>
-    <Password>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAcJk1ehO/b0OnprrtF8EikwAAAAACAAAAAAAQZgAAAAEAACAAAAAUu4aRixkr1655yHtegRA16W/dzvAeLIcuHRwSCdkTZQAAAAAOgAAAAAIAACAAAABytvrTGSJfP3csoEBGxwxMZ1a72LX3cvYcRHcrz+efI0AAAACcgWx/ua7v7k4LTiU9/O2VxiDoAaObDt9evEjX/ZKdtXAoHAhe3JJD2rSkvitQJRSFFfVpvx8aRdxqJ+W5W+hhQAAAAPXccA9AM0fqBAP6XDdDofmoFg8wYp6vQFDPIS1WT0LXctaRkQM3lY4+uckobEvRU0nAP0EacUpCh2dPe3hRSpY=</Password>
+    <Password>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAcJk1ehO/b0OnprrtF8EikwAAAAACAAAAAAAQZgAAAAEAACAAAABZ5w2YZO1FMOrrmngfQVjCiZL5Ibsr4+nhHsNJfurH2wAAAAAOgAAAAAIAACAAAACrVskH927EYZeL+l0lFOAUsxOPEQqaOsmwzC+VzvnT7EAAAABQiyOftzpKK1J9+joLVUzIL5JLzWdLeL7XD6+z57vi6AlbUGe3LkOcsWXgvUNXEQIkCoUHm64Bpl0S/V2ePHyuQAAAAOG3w+G6F862594O4MlGLL7MlXPuzgVEHDqXRu9lqWuao66pZ0J02h2lwP1JPiLWqd0ZdlJIU5lmWncqyRvv98g=</Password>
     <Database>Club</Database>
     <DriverData>
       <LegacyMFA>false</LegacyMFA>
@@ -19,8 +19,8 @@
 
 void Main()
 {
-    var tableName = "ClubRemuneration";
-    var className = "ClubRemuneration";
+    var tableName = "ClubCashClaim";
+    var className = "ClubCashClaim";
 
     this.Connection.DumpClass($"SELECT TOP 1 * FROM {tableName} WITH (NOLOCK)", className).Dump();
 }
@@ -69,7 +69,7 @@ public static class LINQPadExtensions
             if (reader.FieldCount <= 1) continue;
 
             builder.AppendFormat("public class {0}{1}", className, Environment.NewLine);
-            builder.AppendLine("{");
+            builder.Append("{");
             var schema = reader.GetSchemaTable();
 
             foreach (DataRow row in schema.Rows)
@@ -79,8 +79,8 @@ public static class LINQPadExtensions
                 var isNullable = (bool)row["AllowDBNull"] && NullableTypes.Contains(type);
                 var collumnName = (string)row["ColumnName"];
 
-                builder.AppendLine(string.Format("\tpublic {0}{1} {2} {{ get; set; }}", name, isNullable ? "?" : string.Empty, collumnName));
                 builder.AppendLine();
+                builder.AppendLine(string.Format("\tpublic {0}{1} {2} {{ get; set; }}", name, isNullable ? "?" : string.Empty, collumnName));
             }
 
             builder.AppendLine("}");
