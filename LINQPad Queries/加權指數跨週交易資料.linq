@@ -12,14 +12,14 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 {
     var records = csv.GetRecords<DailyK>().ToList();
 
-    //records.Dump();
+    records.Dump();
 
     DailyK cross = null;
 
     foreach (var curt in records)
     {
         // 跨週
-        if (curt.DiffWeekDays < 0)
+        if (curt.DiffWeekDays < 0 || curt.DiffDays >= 7)
         {
             cross = curt;
             cross.NextTradeDate = string.Empty;
@@ -55,7 +55,8 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 }
 
 result.Dump();
-
+//return;
+ 
 using (var writer = new StreamWriter(@"D:\Downloads\options\result.csv"))
 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
 {
