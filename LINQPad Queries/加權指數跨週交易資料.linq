@@ -12,7 +12,7 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 {
     var records = csv.GetRecords<DailyK>().ToList();
 
-    records.Dump();
+    //records.Dump();
 
     DailyK cross = null;
 
@@ -55,7 +55,7 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 }
 
 result.Dump();
-//return;
+return;
  
 using (var writer = new StreamWriter(@"D:\Downloads\options\result.csv"))
 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
