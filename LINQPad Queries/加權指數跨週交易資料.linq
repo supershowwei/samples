@@ -5,99 +5,90 @@
   <Namespace>CsvHelper.Configuration.Attributes</Namespace>
 </Query>
 
-var result = new List<object>();
+var weeklyOptionCandlesticks = new List<Candlestick>();
 
-using (var reader = new StreamReader(@"D:\Downloads\options\活頁簿2.csv"))
+// 起始 K棒 要是某結算日後的第一個交易日
+using (var reader = new StreamReader(@"D:\Downloads\candlesticks.csv"))
 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 {
-    var records = csv.GetRecords<DailyK>().ToList();
+    var candlesticks = csv.GetRecords<Candlestick>().ToList();
 
     //records.Dump();
 
-    DailyK cross = null;
+    Candlestick weeklyOptionCandlestick = default;
+    
+    DateTime settlementDate = default;
 
-    foreach (var curt in records)
+    foreach (var candlestick in candlesticks)
     {
-        // 跨週
-        if (curt.DiffWeekDays < 0 || curt.DiffDays >= 7)
+        // 星期三，一定是結算日。
+        if (candlestick.WeekDay == DayOfWeek.Wednesday)
         {
-            cross = curt;
-            cross.NextTradeDate = string.Empty;
-            cross.NextOpen = decimal.MinValue;
-            cross.NextHigh = decimal.MinValue;
-            cross.NextLow = decimal.MaxValue;
             
+        }
+        
+        // 星期三不交易，下一個交易日，即結算日。
+        
+        // 跨週
+        if (candlestick.DiffWeekDays < 0 || candlestick.DiffDays >= 7)
+        {
+            weeklyOptionCandlestick = candlestick;
+            weeklyOptionCandlestick.NextTradeDate = string.Empty;
+            weeklyOptionCandlestick.NextOpen = decimal.MinValue;
+            weeklyOptionCandlestick.NextHigh = decimal.MinValue;
+            weeklyOptionCandlestick.NextLow = decimal.MaxValue;
+
             continue;
         }
 
         // 結算日
-        if (cross != null)
+        if (weeklyOptionCandlestick != null)
         {
-            if (cross.NextOpen < 0)
+            if (weeklyOptionCandlestick.NextOpen < 0)
             {
-                cross.NextOpen = curt.PrevOpen;
+                weeklyOptionCandlestick.NextOpen = candlestick.PrevOpen;
             }
 
-            cross.NextTradeDate = curt.PrevTradeDate;
-            cross.NextHigh = Math.Max(cross.NextHigh, curt.PrevHigh);
-            cross.NextLow = Math.Min(cross.NextLow, curt.PrevLow);
-            cross.NextClose = curt.PrevClose;
-            
-            if (cross.WeekDay < 3 || curt.WeekDay == 3 || (cross.WeekDay + cross.DiffDays) >= 10)
+            weeklyOptionCandlestick.NextTradeDate = candlestick.PrevTradeDate;
+            weeklyOptionCandlestick.NextHigh = Math.Max(weeklyOptionCandlestick.NextHigh, candlestick.PrevHigh);
+            weeklyOptionCandlestick.NextLow = Math.Min(weeklyOptionCandlestick.NextLow, candlestick.PrevLow);
+            weeklyOptionCandlestick.NextClose = candlestick.PrevClose;
+
+            if (weeklyOptionCandlestick.WeekDay < 3 || candlestick.WeekDay == 3 || (weeklyOptionCandlestick.WeekDay + weeklyOptionCandlestick.DiffDays) >= 10)
             {
                 // 星期一、二跨週，或是，星期三、四、五跨週又跨週（WeekDay + DiffDays >= 10），表示遇到的第一個交易日就是結算日，其他的就是星期三是結算日。
-                result.Add(cross);
+                weeklyOptionCandlesticks.Add(weeklyOptionCandlestick);
 
-                cross = null;
+                weeklyOptionCandlestick = null;
             }
         }
     }
 }
 
-result.Dump();
+weeklyOptionCandlesticks.Dump();
 return;
- 
-using (var writer = new StreamWriter(@"D:\Downloads\options\result.csv"))
+
+using (var writer = new StreamWriter(@"D:\Downloads\weekly-options.csv"))
 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
 {
-    csv.WriteRecords(result);
+    csv.WriteRecords(weeklyOptionCandlesticks);
 }
 
-public class DailyK
+public class Candlestick
 {
-    [Name("TradeDate")]
-    public string PrevTradeDate { get; set; }
+    public DateTime Date { get; set; }
 
     [Name("Open")]
-    public decimal PrevOpen { get; set; }
+    public decimal Open { get; set; }
 
     [Name("High")]
-    public decimal PrevHigh { get; set; }
+    public decimal High { get; set; }
 
     [Name("Low")]
-    public decimal PrevLow { get; set; }
+    public decimal Low { get; set; }
 
     [Name("Close")]
-    public decimal PrevClose { get; set; }
+    public decimal Close { get; set; }
 
-    public int WeekDay { get; set; }
-
-    public int? DiffWeekDays { get; set; }
-
-    public int? DiffDays { get; set; }
-
-    [Name("TradeDate")]
-    public string NextTradeDate { get; set; }
-
-    [Name("Open")]
-    public decimal NextOpen { get; set; }
-
-    [Name("High")]
-    public decimal NextHigh { get; set; }
-
-    [Name("Low")]
-    public decimal NextLow { get; set; }
-
-    [Name("Close")]
-    public decimal NextClose { get; set; }
+    public DayOfWeek WeekDay { get { return this.Date.DayOfWeek; } }
 }
