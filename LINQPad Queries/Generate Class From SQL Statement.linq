@@ -1,14 +1,14 @@
 <Query Kind="Program">
   <Connection>
-    <ID>3c15d999-9d27-45e4-866f-0443f5cae520</ID>
+    <ID>0bcf1927-263f-46ae-b44e-27919fa73756</ID>
     <NamingServiceVersion>2</NamingServiceVersion>
     <Persist>true</Persist>
-    <Server>dba.wantgoo.com</Server>
+    <Server>35.187.152.118</Server>
     <AllowDateOnlyTimeOnly>true</AllowDateOnlyTimeOnly>
     <SqlSecurity>true</SqlSecurity>
     <UserName>pma$-3a5B2347-7BF6-4506-8E26-7D0FFE1CA91D-$$</UserName>
-    <Password>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAcJk1ehO/b0OnprrtF8EikwAAAAACAAAAAAAQZgAAAAEAACAAAABZ5w2YZO1FMOrrmngfQVjCiZL5Ibsr4+nhHsNJfurH2wAAAAAOgAAAAAIAACAAAACrVskH927EYZeL+l0lFOAUsxOPEQqaOsmwzC+VzvnT7EAAAABQiyOftzpKK1J9+joLVUzIL5JLzWdLeL7XD6+z57vi6AlbUGe3LkOcsWXgvUNXEQIkCoUHm64Bpl0S/V2ePHyuQAAAAOG3w+G6F862594O4MlGLL7MlXPuzgVEHDqXRu9lqWuao66pZ0J02h2lwP1JPiLWqd0ZdlJIU5lmWncqyRvv98g=</Password>
-    <Database>Club</Database>
+    <Password>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA8k6fSZv6Fkaf9CefTm/ykgAAAAACAAAAAAAQZgAAAAEAACAAAACsQ635bEcXtmURTRaHfKGmmeqYr6vk3sQ+A5iXuw5vGQAAAAAOgAAAAAIAACAAAABl5UfDph7y/AWvDwJiKA4+WLQCxOjNkAoMW4l1hCpQHkAAAADw/gQv9jgkbFnUpmNcll7fMJPSVic0RSelvPWkZCrKyJNTPT8H3vyVn/dX6Qdabm0nU78U4w/S/yfq3jfb0f+oQAAAACjD25xXnYBZzOjW9i+/0mtuhKAEe6itMCqzrzCVxXEQY8aLvXM1ROxGmCJ0BiyOMk+tOpz34U/tbiGxAOl2wFI=</Password>
+    <Database>Fintune</Database>
     <DriverData>
       <LegacyMFA>false</LegacyMFA>
     </DriverData>
@@ -19,8 +19,8 @@
 
 void Main()
 {
-    var tableName = "ClubCashClaim";
-    var className = "ClubCashClaim";
+    var tableName = "RetroTechnicalIndicator";
+    var className = "RetroTechnicalIndicator";
 
     this.Connection.DumpClass($"SELECT TOP 1 * FROM {tableName} WITH (NOLOCK)", className).Dump();
 }
