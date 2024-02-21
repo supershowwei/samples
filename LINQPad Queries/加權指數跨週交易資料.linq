@@ -3,92 +3,97 @@
   <Namespace>CsvHelper</Namespace>
   <Namespace>System.Globalization</Namespace>
   <Namespace>CsvHelper.Configuration.Attributes</Namespace>
+  <Namespace>CsvHelper.TypeConversion</Namespace>
+  <Namespace>CsvHelper.Configuration</Namespace>
 </Query>
 
 var weeklyOptionCandlesticks = new List<Candlestick>();
 
-// 起始 K棒 要是某結算日後的第一個交易日
+// 起始 K棒 必須要是某個結算日後的第一個交易日
 using (var reader = new StreamReader(@"D:\Downloads\candlesticks.csv"))
 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 {
+    csv.Context.RegisterClassMap<CandlestickMap>();
+    
     var candlesticks = csv.GetRecords<Candlestick>().ToList();
 
-    //records.Dump();
-
     Candlestick weeklyOptionCandlestick = default;
-    
-    DateTime settlementDate = default;
+    DateOnly expectedSettlementDate = DateOnly.MinValue;
 
     foreach (var candlestick in candlesticks)
     {
-        // 星期三，一定是結算日。
-        if (candlestick.WeekDay == DayOfWeek.Wednesday)
+        if (expectedSettlementDate == DateOnly.MinValue)
         {
-            
-        }
-        
-        // 星期三不交易，下一個交易日，即結算日。
-        
-        // 跨週
-        if (candlestick.DiffWeekDays < 0 || candlestick.DiffDays >= 7)
-        {
-            weeklyOptionCandlestick = candlestick;
-            weeklyOptionCandlestick.NextTradeDate = string.Empty;
-            weeklyOptionCandlestick.NextOpen = decimal.MinValue;
-            weeklyOptionCandlestick.NextHigh = decimal.MinValue;
-            weeklyOptionCandlestick.NextLow = decimal.MaxValue;
+            var daysToAdd = ((int)DayOfWeek.Wednesday - (int)candlestick.FromDate.DayOfWeek + 7) % 7;
 
-            continue;
+            expectedSettlementDate = candlestick.FromDate.AddDays(daysToAdd);
         }
 
-        // 結算日
-        if (weeklyOptionCandlestick != null)
+        if (weeklyOptionCandlestick == default)
         {
-            if (weeklyOptionCandlestick.NextOpen < 0)
+            weeklyOptionCandlestick = new Candlestick
             {
-                weeklyOptionCandlestick.NextOpen = candlestick.PrevOpen;
-            }
+                FromDate = candlestick.FromDate,
+                ToDate = candlestick.FromDate,
+                Open = candlestick.Open,
+                High = candlestick.High,
+                Low = candlestick.Low,
+                Close = candlestick.Close
+            };
+        }
+        else
+        {
+            weeklyOptionCandlestick.ToDate = candlestick.FromDate;
+            weeklyOptionCandlestick.High = Math.Max(weeklyOptionCandlestick.High, candlestick.High);
+            weeklyOptionCandlestick.Low = Math.Min(weeklyOptionCandlestick.Low, candlestick.Low);
+            weeklyOptionCandlestick.Close = candlestick.Close;
+        }
 
-            weeklyOptionCandlestick.NextTradeDate = candlestick.PrevTradeDate;
-            weeklyOptionCandlestick.NextHigh = Math.Max(weeklyOptionCandlestick.NextHigh, candlestick.PrevHigh);
-            weeklyOptionCandlestick.NextLow = Math.Min(weeklyOptionCandlestick.NextLow, candlestick.PrevLow);
-            weeklyOptionCandlestick.NextClose = candlestick.PrevClose;
+        // 大於等於預期的結算日，那就是結算日了。
+        if (candlestick.FromDate >= expectedSettlementDate)
+        {
+            weeklyOptionCandlesticks.Add(weeklyOptionCandlestick);
 
-            if (weeklyOptionCandlestick.WeekDay < 3 || candlestick.WeekDay == 3 || (weeklyOptionCandlestick.WeekDay + weeklyOptionCandlestick.DiffDays) >= 10)
-            {
-                // 星期一、二跨週，或是，星期三、四、五跨週又跨週（WeekDay + DiffDays >= 10），表示遇到的第一個交易日就是結算日，其他的就是星期三是結算日。
-                weeklyOptionCandlesticks.Add(weeklyOptionCandlestick);
-
-                weeklyOptionCandlestick = null;
-            }
+            weeklyOptionCandlestick = default;
+            expectedSettlementDate = DateOnly.MinValue;
         }
     }
 }
 
 weeklyOptionCandlesticks.Dump();
-return;
+//return;
 
-using (var writer = new StreamWriter(@"D:\Downloads\weekly-options.csv"))
+using (var writer = new StreamWriter(@"D:\Downloads\weekly-option-candlesticks.csv"))
 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
 {
+    var options = new TypeConverterOptions { Formats = new[] { "yyyy-MM-dd" } };
+
+    csv.Context.TypeConverterOptionsCache.AddOptions<DateOnly>(options);
+
     csv.WriteRecords(weeklyOptionCandlesticks);
 }
 
 public class Candlestick
 {
-    public DateTime Date { get; set; }
+    [Name("Date")]
+    public DateOnly FromDate { get; set; }
+    
+    public DateOnly ToDate { get; set; }
 
-    [Name("Open")]
     public decimal Open { get; set; }
 
-    [Name("High")]
     public decimal High { get; set; }
 
-    [Name("Low")]
     public decimal Low { get; set; }
 
-    [Name("Close")]
     public decimal Close { get; set; }
+}
 
-    public DayOfWeek WeekDay { get { return this.Date.DayOfWeek; } }
+public sealed class CandlestickMap : ClassMap<Candlestick>
+{
+    public CandlestickMap()
+    {
+        this.AutoMap(CultureInfo.InvariantCulture);
+        this.Map(m => m.ToDate).Ignore();
+    }
 }
