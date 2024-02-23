@@ -61,7 +61,7 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 }
 
 weeklyOptionCandlesticks.Dump();
-//return;
+return;
 
 using (var writer = new StreamWriter(@"D:\Downloads\weekly-option-candlesticks.csv"))
 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
