@@ -8,7 +8,7 @@
     <SqlSecurity>true</SqlSecurity>
     <UserName>pma$-3a5B2347-7BF6-4506-8E26-7D0FFE1CA91D-$$</UserName>
     <Password>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAcJk1ehO/b0OnprrtF8EikwAAAAACAAAAAAAQZgAAAAEAACAAAABZ5w2YZO1FMOrrmngfQVjCiZL5Ibsr4+nhHsNJfurH2wAAAAAOgAAAAAIAACAAAACrVskH927EYZeL+l0lFOAUsxOPEQqaOsmwzC+VzvnT7EAAAABQiyOftzpKK1J9+joLVUzIL5JLzWdLeL7XD6+z57vi6AlbUGe3LkOcsWXgvUNXEQIkCoUHm64Bpl0S/V2ePHyuQAAAAOG3w+G6F862594O4MlGLL7MlXPuzgVEHDqXRu9lqWuao66pZ0J02h2lwP1JPiLWqd0ZdlJIU5lmWncqyRvv98g=</Password>
-    <Database>twStocks</Database>
+    <Database>twFutures</Database>
     <DriverData>
       <LegacyMFA>false</LegacyMFA>
     </DriverData>
@@ -19,8 +19,8 @@
 
 void Main()
 {
-    var tableName = "ETFIncomeSource";
-    var className = "ETFIncomeSource";
+    var tableName = "StockFutureDailyTransaction";
+    var className = "StockFutureDailyTransaction";
 
     this.Connection.DumpClass($"SELECT TOP 1 * FROM {tableName} WITH (NOLOCK)", className).Dump();
 }

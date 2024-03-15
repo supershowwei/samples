@@ -1,15 +1,15 @@
 <Query Kind="Statements">
   <NuGetReference>CsvHelper</NuGetReference>
-  <Namespace>CsvHelper</Namespace>
   <Namespace>System.Globalization</Namespace>
-  <Namespace>CsvHelper.Configuration.Attributes</Namespace>
+  <Namespace>CsvHelper</Namespace>
   <Namespace>CsvHelper.TypeConversion</Namespace>
+  <Namespace>CsvHelper.Configuration.Attributes</Namespace>
   <Namespace>CsvHelper.Configuration</Namespace>
 </Query>
 
 var weeklyOptionCandlesticks = new List<Candlestick>();
 
-// 起始 K棒 必須要是某個結算日後的第一個交易日
+// 起始 K棒 必須要是某個結算日後 >= 週五交易日
 using (var reader = new StreamReader(@"D:\Downloads\candlesticks.csv"))
 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 {
@@ -18,6 +18,7 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
     var candlesticks = csv.GetRecords<Candlestick>().ToList();
 
     Candlestick weeklyOptionCandlestick = default;
+    DateOnly previousSettlementDate = DateOnly.MinValue;
     DateOnly expectedSettlementDate = DateOnly.MinValue;
 
     foreach (var candlestick in candlesticks)
@@ -31,15 +32,18 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 
         if (weeklyOptionCandlestick == default)
         {
-            weeklyOptionCandlestick = new Candlestick
+            if (candlestick.FromDate >= previousSettlementDate)
             {
-                FromDate = candlestick.FromDate,
-                ToDate = candlestick.FromDate,
-                Open = candlestick.Open,
-                High = candlestick.High,
-                Low = candlestick.Low,
-                Close = candlestick.Close
-            };
+                weeklyOptionCandlestick = new Candlestick
+                {
+                    FromDate = candlestick.FromDate,
+                    ToDate = candlestick.FromDate,
+                    Open = candlestick.Open,
+                    High = candlestick.High,
+                    Low = candlestick.Low,
+                    Close = candlestick.Close
+                };
+            }
         }
         else
         {
@@ -56,6 +60,15 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 
             weeklyOptionCandlestick = default;
             expectedSettlementDate = DateOnly.MinValue;
+
+            previousSettlementDate = candlestick.FromDate;
+
+            if (previousSettlementDate.DayOfWeek >= DayOfWeek.Wednesday)
+            {
+                var daysToAdd = ((int)DayOfWeek.Friday - (int)previousSettlementDate.DayOfWeek + 7) % 7;
+
+                previousSettlementDate = previousSettlementDate.AddDays(daysToAdd);
+            }
         }
     }
 }

@@ -9,12 +9,12 @@
 
 var weeklyOptionCandlesticks = new List<Candlestick>();
 
-// 起始 K棒 必須要是某個結算日
+// 起始 K棒 必須要是某個結算日後 >= 週一交易日
 using (var reader = new StreamReader(@"D:\Downloads\candlesticks.csv"))
 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 {
     csv.Context.RegisterClassMap<CandlestickMap>();
-
+    
     var candlesticks = csv.GetRecords<Candlestick>().ToList();
 
     Candlestick weeklyOptionCandlestick = default;
@@ -32,15 +32,18 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 
         if (weeklyOptionCandlestick == default)
         {
-            weeklyOptionCandlestick = new Candlestick
+            if (candlestick.FromDate >= previousSettlementDate)
             {
-                FromDate = candlestick.FromDate,
-                ToDate = candlestick.FromDate,
-                Open = candlestick.Open,
-                High = candlestick.High,
-                Low = candlestick.Low,
-                Close = candlestick.Close
-            };
+                weeklyOptionCandlestick = new Candlestick
+                {
+                    FromDate = candlestick.FromDate,
+                    ToDate = candlestick.FromDate,
+                    Open = candlestick.Open,
+                    High = candlestick.High,
+                    Low = candlestick.Low,
+                    Close = candlestick.Close
+                };
+            }
         }
         else
         {
@@ -53,23 +56,19 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         // 大於等於預期的結算日，那就是結算日了。
         if (candlestick.FromDate >= expectedSettlementDate)
         {
-            if (previousSettlementDate != DateOnly.MinValue)
-            {
-                weeklyOptionCandlesticks.Add(weeklyOptionCandlestick);
-            }
-            
-            weeklyOptionCandlestick = new Candlestick
-            {
-                FromDate = candlestick.FromDate,
-                ToDate = candlestick.FromDate,
-                Open = candlestick.Open,
-                High = candlestick.High,
-                Low = candlestick.Low,
-                Close = candlestick.Close
-            };
-            
-            previousSettlementDate = candlestick.FromDate;
+            weeklyOptionCandlesticks.Add(weeklyOptionCandlestick);
+
+            weeklyOptionCandlestick = default;
             expectedSettlementDate = DateOnly.MinValue;
+
+            previousSettlementDate = candlestick.FromDate;
+
+            if (previousSettlementDate.DayOfWeek >= DayOfWeek.Wednesday)
+            {
+                var daysToAdd = ((int)DayOfWeek.Monday - (int)previousSettlementDate.DayOfWeek + 7) % 7;
+
+                previousSettlementDate = previousSettlementDate.AddDays(daysToAdd);
+            }
         }
     }
 }
@@ -91,7 +90,7 @@ public class Candlestick
 {
     [Name("Date")]
     public DateOnly FromDate { get; set; }
-
+    
     public DateOnly ToDate { get; set; }
 
     public decimal Open { get; set; }
