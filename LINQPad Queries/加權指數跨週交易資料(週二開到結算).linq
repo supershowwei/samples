@@ -37,6 +37,7 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
                     FromDate = candlestick.FromDate,
                     ToDate = candlestick.FromDate,
+                    TradeDates = 1,
                     Open = candlestick.Open,
                     High = candlestick.High,
                     Low = candlestick.Low,
@@ -47,6 +48,7 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         else
         {
             weeklyOptionCandlestick.ToDate = candlestick.FromDate;
+            weeklyOptionCandlestick.TradeDates++;
             weeklyOptionCandlestick.High = Math.Max(weeklyOptionCandlestick.High, candlestick.High);
             weeklyOptionCandlestick.Low = Math.Min(weeklyOptionCandlestick.Low, candlestick.Low);
             weeklyOptionCandlestick.Close = candlestick.Close;
@@ -55,7 +57,7 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         // 大於等於預期的結算日，那就是結算日了。
         if (candlestick.FromDate >= expectedSettlementDate)
         {
-            if (weeklyOptionCandlestick?.FromDate < candlestick.FromDate && candlestick.FromDate.Subtract(weeklyOptionCandlestick.FromDate).TotalDays <= 1)
+            if (weeklyOptionCandlestick?.TradeDates > 1)
             {
                 weeklyOptionCandlesticks.Add(weeklyOptionCandlestick);
             }
@@ -78,7 +80,15 @@ using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
 
     csv.Context.TypeConverterOptionsCache.AddOptions<DateTime>(options);
 
-    csv.WriteRecords(weeklyOptionCandlesticks);
+    csv.WriteRecords(weeklyOptionCandlesticks.Select(x => new
+    {
+        x.FromDate,
+        x.ToDate,
+        x.Open,
+        x.High,
+        x.Low,
+        x.Close
+    }));
 }
 
 public class Candlestick
@@ -87,6 +97,8 @@ public class Candlestick
     public DateTime FromDate { get; set; }
 
     public DateTime ToDate { get; set; }
+
+    public int TradeDates { get; set; }
 
     public decimal Open { get; set; }
 
@@ -103,5 +115,6 @@ public sealed class CandlestickMap : ClassMap<Candlestick>
     {
         this.AutoMap(CultureInfo.InvariantCulture);
         this.Map(m => m.ToDate).Ignore();
+        this.Map(m => m.TradeDates).Ignore();
     }
 }
