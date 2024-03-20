@@ -18,11 +18,11 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
     var candlesticks = csv.GetRecords<Candlestick>().ToList();
 
     Candlestick weeklyOptionCandlestick = default;
-    DateOnly expectedSettlementDate = DateOnly.MinValue;
+    DateTime expectedSettlementDate = default;
 
     foreach (var candlestick in candlesticks)
     {
-        if (expectedSettlementDate == DateOnly.MinValue)
+        if (expectedSettlementDate == default)
         {
             var daysToAdd = ((int)DayOfWeek.Wednesday - (int)candlestick.FromDate.DayOfWeek + 7) % 7;
 
@@ -44,10 +44,12 @@ using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             
             weeklyOptionCandlesticks.Add(weeklyOptionCandlestick);
             
-            expectedSettlementDate = DateOnly.MinValue;
+            expectedSettlementDate = default;
         }
     }
 }
+
+weeklyOptionCandlesticks = weeklyOptionCandlesticks.TakeLast(100).ToList();
 
 weeklyOptionCandlesticks.Dump();
 return;
@@ -57,7 +59,7 @@ using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
 {
     var options = new TypeConverterOptions { Formats = new[] { "yyyy-MM-dd" } };
 
-    csv.Context.TypeConverterOptionsCache.AddOptions<DateOnly>(options);
+    csv.Context.TypeConverterOptionsCache.AddOptions<DateTime>(options);
 
     csv.WriteRecords(weeklyOptionCandlesticks);
 }
@@ -65,9 +67,9 @@ using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
 public class Candlestick
 {
     [Name("Date")]
-    public DateOnly FromDate { get; set; }
+    public DateTime FromDate { get; set; }
 
-    public DateOnly ToDate { get; set; }
+    public DateTime ToDate { get; set; }
 
     public decimal Open { get; set; }
 
