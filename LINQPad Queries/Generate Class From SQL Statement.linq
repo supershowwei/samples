@@ -19,8 +19,8 @@
 
 void Main()
 {
-    var tableName = "Order";
-    var className = "Order";
+    var tableName = "OrderInvoice";
+    var className = "OrderInvoice";
 
     this.Connection.DumpClass($"SELECT TOP 1 * FROM [{tableName}] WITH (NOLOCK)", className).Dump();
 }

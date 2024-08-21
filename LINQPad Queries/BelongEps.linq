@@ -10,7 +10,7 @@
 </Query>
 
 // 開始允許季配息的日期
-var date = new DateTime(2019, 1, 1);
+var dividendQuarterlyStartDate = new DateTime(2019, 1, 1);
 
 SqlServerDataAccessFactory.Instance.AddConnectionString("TwStocks", "Server=dba.wantgoo.com;Database=twStocks;User Id=pma$-3a5B2347-7BF6-4506-8E26-7D0FFE1CA91D-$$;Password=$@@~~474FdB67-2AE6-42AF-8ADE-9925D43F0570-wantg00~~-$;");
 
@@ -28,7 +28,7 @@ var stocks = await stockDataAccess.Where(x => x.Time >= aliveTime && new[] { 0, 
                  .QueryAsync();
 
 // DEBUG
-//stocks = stocks.Where(x => x.StockNo == "8049").ToList();
+stocks = stocks.Where(x => x.StockNo == "2330").ToList();
 
 foreach (var stock in stocks)
 {
@@ -50,7 +50,7 @@ foreach (var stock in stocks)
 
         decimal eps;
 
-        if (dividendPolicy.Date < date)
+        if (dividendPolicy.Date < dividendQuarterlyStartDate)
         {
             var yearEpses = epses.Where(x => x.Year == dividendPolicy.Date.Year - 1).ToList();
 
@@ -102,6 +102,7 @@ static List<(int, int)> ResolveSeasons(DividendPolicy dividend)
         var period when period.IsMatch(@"^(\d+)後半年度盈餘分派暨\d+年度資本公積發放現金", out var match) => CreateSeasons(match.Groups[1].Value.ToInt32() + 1911, 3, 4).ToList(),
         var period when period.IsMatch(@"^(\d+)年後半年度及(\d+)年前半年度", out var match) => CreateSeasons(match.Groups[1].Value.ToInt32() + 1911, 3, 4).Concat(CreateSeasons(match.Groups[2].Value.ToInt32() + 1911, 1, 2)).ToList(),
         var period when period.IsMatch(@"^(\d+)年度第(\d+)季及第(\d+)季", out var match) => CreateSeasons(match.Groups[1].Value.ToInt32() + 1911, match.Groups[2].Value.ToInt32()).Concat(CreateSeasons(match.Groups[1].Value.ToInt32() + 1911, match.Groups[3].Value.ToInt32())).ToList(),
+        var period when period.IsMatch(@"^(\d+)年及以前年度$", out var match) => CreateSeasons(match.Groups[1].Value.ToInt32() + 1911, 1, 2, 3, 4),
         _ => null
     };
 }
