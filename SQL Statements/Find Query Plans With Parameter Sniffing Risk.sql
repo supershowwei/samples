@@ -34,6 +34,7 @@ FROM stats
 CROSS APPLY sys.dm_exec_sql_text(stats.plan_handle) AS st
 CROSS APPLY sys.dm_exec_query_plan(stats.plan_handle) AS qp
 WHERE stats.execution_count >= 5                               -- ¿z±¼°¸µo
+    AND stats.min_logical_reads > 0
     AND stats.max_logical_reads > stats.min_logical_reads * 10   -- 10 ­¿¸¨®t
     AND DB_NAME(st.dbid) = @DBName
 ORDER BY stats.max_logical_reads DESC;
